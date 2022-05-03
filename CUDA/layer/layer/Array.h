@@ -13,5 +13,8 @@ private:
     vector<int> dim;
 public:
     Array(vector<int> dimemsions);
+    Array(T** arr, int dim0, int dim1);
+    Array(T*** arr, int dim0, int dim1, int dim2);
+    Array(T**** arr, int dim0, int dim1, int dim2, int dim3);
 };
 
