@@ -15,7 +15,6 @@ Array<T>::Array(vector<int> dimemsions)
 template<typename T> Array<T>::Array(T arr[], int l)
 {
     data = new T[l];
-    length = l;
     for (int i - 0; i < length; i++)
     {
         data.push_back(arr[i]);
@@ -24,9 +23,6 @@ template<typename T> Array<T>::Array(T arr[], int l)
 
 template<typename T> Array<T>::Array(T** arr, int dim0, int dim1)
 {
-    lenght = dim0 * dim1;
-    data = new T[length];
-
     for (int i = 0; i < dim0; i++) {
         for (int j = 0; j < dim1; j++)
         {
@@ -38,8 +34,6 @@ template<typename T> Array<T>::Array(T** arr, int dim0, int dim1)
 
 template<typename T> Array<T>::Array(T*** arr, int dim0, int dim1, int dim2)
 {
-    lenght = dim0 * dim1 * dim2;
-    data = new T[length];
 
     for (int i = 0; i < dim0; i++) {
         for (int j = 0; j < dim1; j++)
@@ -55,8 +49,6 @@ template<typename T> Array<T>::Array(T*** arr, int dim0, int dim1, int dim2)
 
 template<typename T> Array<T>::Array(T**** arr, int dim0, int dim1, int dim2, int dim3)
 {
-    lenght = dim0 * dim1 * dim2 * dim3;
-    data = new T[length];
 
     for (int i = 0; i < dim0; i++) {
         for (int j = 0; j < dim1; j++)
