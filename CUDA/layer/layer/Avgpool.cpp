@@ -40,7 +40,7 @@ vector<vector<float>> Avgpool::convert(vector<float> v_input)
 }
 
 
-vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s = 1)
+vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s )
 {
 	const int numrows = get_input_width();
 	int numcols = get_input_height();

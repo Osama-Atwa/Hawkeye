@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <math.h>
 #include <stdio.h>
 #include <string>
