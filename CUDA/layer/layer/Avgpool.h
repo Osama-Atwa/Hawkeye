@@ -19,7 +19,7 @@ public:
 	int get_padding();
 
 	vector<vector<float>> convert(vector<float> v);
-	vector<vector<float>> mean_filter(vector<vector<float>> v);
+	vector<vector<float>> mean_filter(vector<vector<float>> v, int s = 1 );
 	void load_parameters(vector<float>& V);
 	void execute(vector<float>& v_input,vector<float>& v_output);
 };

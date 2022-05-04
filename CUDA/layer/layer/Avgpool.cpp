@@ -40,7 +40,7 @@ vector<vector<float>> Avgpool::convert(vector<float> v_input)
 }
 
 
-vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input)
+vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s = 1)
 {
 	const int numrows = get_input_width();
 	int numcols = get_input_height();
@@ -48,27 +48,26 @@ vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input)
 	vector<vector<float> > v_output(numrows,vector<float>(numcols));
 
 	vector<float> window;
-	window.resize(9);
-	
+	int window_size = get_window_size();
+	window.resize(window_size * window_size);
+	int x = floor(window_size / 2);
 	float avg;
-	for (row = 1; row < numrows-1; row++)
+	int index = 0;
+	for (row = x; row < numrows-x; row++)
 	{
-		for (col = 1; col < numcols-1; col++)
+		for (col = x; col < numcols-x; col++)
 		{
-			//neighbor pixel values are stored in window including this pixel
-			window[0] = v_input[row - 1][col - 1];
-			window[1] = v_input[row - 1][col];
-			window[2] = v_input[row - 1][col + 1];
-			window[3] = v_input[row][col - 1];
-			window[4] = v_input[row][col];
-			window[5] = v_input[row][col + 1];
-			window[6] = v_input[row + 1][col - 1];
-			window[7] = v_input[row + 1][col];
-			window[8] = v_input[row + 1][col + 1];
-
+			for (int i = row - x; i < row + x + 1; i++)
+			{
+				for (int j = col - x; j < col + x + 1; j+=s)
+				{
+					window[index] = v_input[i][j];
+					index++;
+				}
+			}
 			avg = accumulate(window.begin(), window.end(), 0.0) / window.size();
-
 			v_output[row][col] = avg;
+			index = 0;
 		}
 	}
 	return v_output;
