@@ -40,7 +40,7 @@ template<typename T> Array<T>::Array(T*** arr, int dim0, int dim1, int dim2)
         {
             for (int k = 0;k < dim2; k++)
             {
-                data.push_back(arr[i][j]);
+                data.push_back(arr[i][j][k]);
 
             }
         }
@@ -57,7 +57,7 @@ template<typename T> Array<T>::Array(T**** arr, int dim0, int dim1, int dim2, in
             {
                 for (int l = 0; l < dim3; l++)
                 {
-                    data.push_back(arr[i][j]);
+                    data.push_back(arr[i][j][k][l]);
                 }
             }
         }

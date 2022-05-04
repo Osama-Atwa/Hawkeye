@@ -1,6 +1,6 @@
 #pragma once
 #define AFAPI   __attribute__((visibility("default")))
-#include"layer.h";
+#include "layer.h";
 
 class Convolution :public layer {
 private:

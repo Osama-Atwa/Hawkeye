@@ -1,10 +1,11 @@
 #pragma once
 #pragma once
-#include <math.h>;
-#include <stdio.h>;
-#include <string>;
-#include <vector>;
+#include <math.h>
+#include <stdio.h>
+#include <string>
+#include <vector>
 #include <arrayfire.h>
+
 #include <cstdlib>
 #include"Array.h"
 using namespace af;
