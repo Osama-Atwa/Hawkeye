@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <arrayfire.h>
-
+#include <numeric>
 #include <cstdlib>
 #include"Array.h"
 using namespace af;
