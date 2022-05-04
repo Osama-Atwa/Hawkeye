@@ -2,17 +2,42 @@
 #define AF_CPU
 #include <iostream>;
 #include "Convolution.h";
+#include "Avgpool.h";
+#include "Maxpool.h";
+
+vector<vector<float>> convert(vector<float> v_input)
+{
+	int i_w = 3;
+	int i_h = 3;
+	vector<vector<float>> v_output;
+	v_output.resize(i_h);
+
+	for (int i = 0; i < i_w; i++)
+	{
+		v_output[i].resize(i_w);
+	}
+	for (int i = 0; i < v_input.size(); i++)
+	{
+		int row = i / i_h;
+		int col = i % i_w;
+		v_output[row][col] = v_input[i];
+	}
+	return v_output;
+}
 int main() {
 	Convolution conv2d = Convolution(3, 3, 1, 3, 3, 1, 1, 1);
+	Avgpool Avgpool2d = Avgpool(3, 3, 1, 3, 1, 0);
+	Maxpool maxpool = Maxpool(3, 3, 1, 3, 1, 0);
+
 	vector<float> weights;
-	weights.push_back(-1.0);
-	weights.push_back(0.0);
 	weights.push_back(1.0);
-	weights.push_back(-2.0);
-	weights.push_back(0.0);
-	weights.push_back(2.0);
-	weights.push_back(-1.0);
-	weights.push_back(0.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
+	weights.push_back(1.0);
 	weights.push_back(1.0);
 
 	vector<float> input;
@@ -27,9 +52,18 @@ int main() {
 	input.push_back(9.0);
 	vector<float> output;
 
-	conv2d.load_parameters(weights);
-	conv2d.execute(input, output);
-	
+	//conv2d.load_parameters(weights);
+	//conv2d.execute(input, output);
+	//
+	vector<vector<float>> v = convert(input);
+	/*std::cout << v.size() << v[0].size() << endl;
+	vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
+	std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;*/
+	vector<vector<float>> vout = maxpool.max_filter(v, 1);
+
+	//Avgpool2d.load_parameters(weights);
+	//Avgpool2d.execute(input, output);
+
 	//{
 	//	return 0;
 	//	af::array signal = constant(1.f, 3, 3);
@@ -49,9 +83,13 @@ int main() {
 	//	return 0;
 	//}
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < vout.size(); i++)
 	{
-		std::cout << output[i]<<endl;
+		for (int j = 0; j < vout[i].size(); j++)
+		{
+			std::cout << vout[i][j];
+		}
+		std::cout << endl;
 	}
 	return 0;
 }
