@@ -1,6 +1,11 @@
 #include"Avgpool.h";
 
-Avgpool::Avgpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch) { set_window_size(w_s); }
+Avgpool::Avgpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch)
+{
+	set_window_size(w_s);
+	set_stride(s);
+	set_padding(p);
+}
 
 void Avgpool::set_window_size(int w_s)
 {
@@ -73,9 +78,20 @@ vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s 
 	return v_output;
 }
 
+af::array Avgpool::af_mean_filter(af::array v_input, int osz, int wsz, int stride, int padding)
+{
+	af::array unwrapped = af::unwrap(v_input, wsz, wsz, stride, stride, padding, padding);
+	af::array flattened = af::mean(unwrapped, 0);
+	af::print("avgpool flattened", flattened);
+	af::array res = af::wrap(flattened, osz, osz, 1, 1, 1, 1, 0, 0);
+
+	af::print("avgpool res", flattened);
+	return res;
+}
+
 void Avgpool::load_parameters(vector<float>& V) 
 {
-	weights = V;
+	//weights = V;
 }
 void Avgpool::execute(vector<float>& v_input,vector<float>& v_output) 
 {
@@ -87,10 +103,19 @@ void Avgpool::execute(vector<float>& v_input,vector<float>& v_output)
 	int i_h = get_input_height();
 	int i_ch = get_input_channels();
 
+	int osz = (i_w - f_w + 2 * get_padding()) / get_stride() + 1;
+	int o_ch = n_f;
+
 	const af::array af_v_input = af::array(i_w, i_h, 1, i_ch, v_input.data());
-	const af::array af_weights = af::array(f_w, f_h, 1, n_f, this->weights.data());
+	//const af::array af_weights = af::array(f_w, f_h, 1, n_f, this->weights.data());
 	
-	af::array af_v_output = af::mean(af_v_input, af_weights);
+	//af::array af_v_output = af::mean(af_v_input, af_weights);
+	af::array af_v_output(osz, osz, o_ch);
+	for (int i = 0; i < o_ch; i++)
+	{
+		af_v_output(span, span, i) = af_mean_filter(af_v_input(span, span, i), osz, f_w, get_stride(), get_padding());
+	}
+	//af::array af_v_output = af_mean_filter(af_v_input, osz, f_w, get_stride(), get_padding());
 	
 	af::print("input", af_v_input);
 	af::print("output", af_v_output);

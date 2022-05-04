@@ -4,7 +4,7 @@
 #include <vector>
 
 using namespace std;
-//todo: proxies
+
 
 template<typename T>
 class Array{
@@ -17,5 +17,6 @@ public:
     Array(T** arr, int dim0, int dim1);
     Array(T*** arr, int dim0, int dim1, int dim2);
     Array(T**** arr, int dim0, int dim1, int dim2, int dim3);
+
 };
 
