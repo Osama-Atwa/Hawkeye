@@ -49,9 +49,9 @@ int main() {
 	//	return 0;
 	//}
 
-	/*for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 9; i++)
 	{
 		std::cout << output[i]<<endl;
-	}*/
+	}
 	return 0;
 }
