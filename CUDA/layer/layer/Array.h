@@ -14,6 +14,7 @@ private:
 public:
     Array(vector<int> dimemsions);
     void fill_data(vector<T> arr);
+    vector<T> get_data();
     Array(T** arr, int dim0, int dim1);
     Array(T*** arr, int dim0, int dim1, int dim2);
     Array(T**** arr, int dim0, int dim1, int dim2, int dim3);
@@ -36,7 +37,10 @@ template<typename T> void Array<T>::fill_data(vector<T> arr)
 {
     data = arr;
 }
-
+template<typename T> vector<T> Array<T>::get_data()
+{
+    return data;
+}
 template<typename T> Array<T>::Array(T** arr, int dim0, int dim1)
 {
    

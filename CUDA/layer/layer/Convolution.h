@@ -1,7 +1,7 @@
 #pragma once
 #define AFAPI   __attribute__((visibility("default")))
 #include "layer.h";
-
+#include "Array.h";
 class Convolution :public layer {
 private:
 	int no_filters;
@@ -9,8 +9,8 @@ private:
 	int filters_h;
 	int stride;
 	int padding;
-	vector<float> weights;
-	
+	//vector<float> weights;
+	Array<float> weights;
 public:
 	Convolution(int i_w, int i_h, int i_ch, int f_w,int f_h, int no_f, int s, int p);
 	
@@ -25,6 +25,6 @@ public:
 	int get_stride();
 	int get_padding();
 
-	void load_parameters(vector<float>& V);
-	void execute(vector<float>& v_input,vector<float>& v_output);
+	void load_parameters(Array<float>& V);
+	void execute(Array<float>& v_input,Array<float>& v_output);
 };

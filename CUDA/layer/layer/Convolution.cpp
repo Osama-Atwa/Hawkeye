@@ -28,9 +28,9 @@ int Convolution::get_filters_w() { return filters_w; }
 int Convolution::get_filters_h() { return filters_h; }
 int Convolution::get_stride() { return stride; }
 int Convolution::get_padding() { return padding; }
-void Convolution::load_parameters(vector<float>& V) {
+void Convolution::load_parameters(Array<float>& V) {
 
-	weights = V;
+	weights.fill_data(V.get_data());
 	/*int n_f = get_no_filters();
 	int f_w = get_filters_w();
 	int f_h = get_filters_h();
@@ -111,7 +111,7 @@ af::array myconvolve2NN(
 	return af::array(out);
 }
 
-void Convolution::execute(vector<float>& v_input,vector<float>& v_output) {
+void Convolution::execute(Array<float>& v_input,Array<float>& v_output) {
 	int n_f = get_no_filters();
 	int f_w = get_filters_w();
 	int f_h = get_filters_h();
@@ -124,8 +124,8 @@ void Convolution::execute(vector<float>& v_input,vector<float>& v_output) {
 	af::dim4 p (get_padding(), get_padding(), 1, 1);
 	af::dim4 dil (1, 1,0,0);
 //	std::cout << s << p << endl;
-	const af::array af_v_input = af::array( i_w, i_h, 1, i_ch, v_input.data());
-	const af::array af_weights = af::array(f_w,f_h, 1, n_f, this->weights.data());
+	const af::array af_v_input = af::array( i_w, i_h, 1, i_ch, v_input.get_data().data());
+	const af::array af_weights = af::array(f_w,f_h, 1, n_f, this->weights.get_data().data());
 	//cout << "stride " << s[0] << " " << s[1] << " " << s[2] << " " << s[3] << endl;
 
 	//cout << "padding " << p[0] << " " << p[1] << " " << p[2] << " " << p[3] << endl;
@@ -144,6 +144,6 @@ void Convolution::execute(vector<float>& v_input,vector<float>& v_output) {
 	int arrlen = af_v_output.elements();
 	float* dbl_ptr = af_v_output.host<float>();
 
-	v_output = vector<float>(dbl_ptr, dbl_ptr + arrlen);
+	v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
 	//v_output = values;
 }
