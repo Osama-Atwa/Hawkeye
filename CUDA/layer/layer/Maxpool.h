@@ -6,7 +6,7 @@ private:
 	int window_size;
 	int stride;
 	int padding;
-	vector<float> weights;
+	Array<float> weights;
 public:
 	Maxpool(int i_w, int i_h, int ch,int w_s, int s, int p);
 
@@ -23,6 +23,6 @@ public:
 
 	af::array af_max_filter(af::array v_input, int isz, int wsz, int stride, int padding);
 
-	void load_parameters(vector<float>& V);
-	void execute(vector<float>& v_input,vector<float>& v_output);
+	void load_parameters(Array<float>& V);
+	void execute(Array<float>& v_input, Array<float>& v_output);
 };

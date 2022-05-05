@@ -12,6 +12,7 @@ private:
     vector<T> data;
     vector<int> dim;
 public:
+    Array();
     Array(vector<int> dimemsions);
     void fill_data(vector<T> arr);
     vector<T> get_data();
@@ -21,8 +22,8 @@ public:
     T operator()(int i0, int i1 = -1, int i2 = -1, int i3 = -1);
 };
 
-template<typename T>
-Array<T>::Array(vector<int> dimemsions)
+template<typename T> Array<T>::Array() {};
+template<typename T> Array<T>::Array(vector<int> dimemsions)
 {
     dim = dimemsions;
     int nelem = 0;
