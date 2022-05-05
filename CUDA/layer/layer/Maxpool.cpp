@@ -1,6 +1,12 @@
 #include"Maxpool.h";
 
-Maxpool::Maxpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch) { set_window_size(w_s); }
+Maxpool::Maxpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch)
+{
+	set_window_size(w_s);
+	set_stride(s);
+	set_padding(p);
+}
+
 
 void Maxpool::set_window_size(int w_s) { window_size = w_s; }
 void Maxpool::set_stride(int s) { stride = s; }
@@ -65,6 +71,47 @@ vector<vector<float>> Maxpool::max_filter(vector<vector<float>> v_input, int s)
 	return v_output;
 }
 
+af::array Maxpool::af_max_filter(af::array v_input, int osz, int wsz, int stride, int padding)
+{
+	af::array unwrapped = af::unwrap(v_input, wsz, wsz, stride, stride, padding, padding);
+	af::array flattened = (af::max)(unwrapped, 0);
+	af::print("maxpool flattened", flattened);
+	af::array res = af::wrap(flattened, osz, osz, 1, 1, 1, 1, 0, 0);
 
-void Maxpool::load_parameters(vector<float>& V){}
-void Maxpool::execute(vector<float>& v_input,vector<float>& v_output){}
+	af::print("maxpool res", flattened);
+	return res;
+}
+
+void Maxpool::load_parameters(vector<float>& V)
+{
+}
+
+void Maxpool::execute(vector<float>& v_input,vector<float>& v_output)
+{
+	int n_f = get_input_channels();
+	int f_w = get_window_size();
+	int f_h = get_window_size();
+
+	int i_w = get_input_width();
+	int i_h = get_input_height();
+	int i_ch = get_input_channels();
+
+	int osz = (i_w - f_w + 2 * get_padding()) / get_stride() + 1;
+	int o_ch = n_f;
+
+	const af::array af_v_input = af::array(i_w, i_h, 1, i_ch, v_input.data());
+	//const af::array af_weights = af::array(f_w, f_h, 1, n_f, this->weights.data());
+
+	af::array af_v_output(osz, osz, o_ch);
+	for (int i = 0; i < o_ch; i++)
+	{
+		af_v_output(span, span, i) = af_max_filter(af_v_input(span, span, i), osz, f_w, get_stride(), get_padding());
+	}
+
+	af::print("maxpool input", af_v_input);
+	af::print("maxpool output", af_v_output);
+
+	int arrlen = af_v_output.elements();
+	float* dbl_ptr = af_v_output.host<float>();
+	v_output = vector<float>(dbl_ptr, dbl_ptr + arrlen);
+}

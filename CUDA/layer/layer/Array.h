@@ -4,7 +4,7 @@
 #include <vector>
 
 using namespace std;
-//todo: proxies
+
 
 template<typename T>
 class Array{

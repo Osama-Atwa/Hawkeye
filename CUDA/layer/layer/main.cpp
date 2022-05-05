@@ -56,14 +56,20 @@ int main() {
 	//conv2d.execute(input, output);
 	//
 	vector<vector<float>> v = convert(input);
-	/*std::cout << v.size() << v[0].size() << endl;
+	std::cout << v.size() << v[0].size() << endl;
 	vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
-	std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;*/
-	vector<vector<float>> vout = maxpool.max_filter(v, 1);
+	std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;
+	//vector<vector<float>> vout = maxpool.max_filter(v, 1);
 
 	//Avgpool2d.load_parameters(weights);
 	//Avgpool2d.execute(input, output);
 
+	vector<float> input2{ 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16 };
+	vector<float> output2;
+	//Avgpool Avgpool2d2 = Avgpool(4, 4, 1, 3, 1, 0);
+	//Avgpool2d2.execute(input2, output2);
+	Maxpool Maxpool2d2 = Maxpool(4, 4, 1, 3, 1, 0);
+	Maxpool2d2.execute(input2, output2);
 	//{
 	//	return 0;
 	//	af::array signal = constant(1.f, 3, 3);
