@@ -78,6 +78,64 @@ vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s 
 	return v_output;
 }
 
+vector<vector<float>> Avgpool::vector_padding(vector<vector<float>> v, int p_bits, bool zero)
+{
+	vector<vector<float>> result;
+	result.resize(v.size() + 2*p_bits);
+
+	vector<float> padding_vec;
+	padding_vec.resize(v[0].size() + 2 * p_bits, 0.0);
+	
+	for (int i = 0; i < p_bits; i++)
+	{
+		if (zero)
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 0.0);
+			result[i] = vv;
+			padding_vec[i] = 0.0;
+		}
+		else
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 1.0);
+			result[i] = vv;
+			padding_vec[i] = 1.0;
+		}
+
+	}
+	int index = p_bits + v[0].size();
+	for (int l = 0; l < p_bits; l++)
+	{
+		padding_vec[l + index] = zero ? 0.0 : 1.0;
+	}
+
+	for (int i = 0; i < v.size(); i++)
+	{
+		for (int j = 0; j < v[0].size(); j++)
+		{
+			padding_vec[j + p_bits] = v[i][j];
+		}
+		
+		result[p_bits + i] = padding_vec;
+	}
+
+	for (int i = 0; i < p_bits; i++)
+	{
+		if (zero)
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 0.0);
+			result[i+p_bits+v[0].size()] = vv;
+		}
+		else
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 1.0);
+			result[i + p_bits + v[0].size()] = vv;
+		}
+
+	}
+
+	return result;
+}
+
 af::array Avgpool::af_mean_filter(af::array v_input, int osz, int wsz, int stride, int padding)
 {
 	af::array unwrapped = af::unwrap(v_input, wsz, wsz, stride, stride, padding, padding);

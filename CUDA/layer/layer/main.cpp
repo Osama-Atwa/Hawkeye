@@ -40,6 +40,16 @@ int main() {
 	weights.push_back(1.0);
 	weights.push_back(1.0);
 
+	vector<vector<float>> v = Avgpool2d.convert(weights);
+	vector<vector<float>> result = Avgpool2d.vector_padding(v, 2, true);
+	for (int i = 0; i < result.size(); i++)
+	{
+		for (int j = 0; j < result[i].size(); j++)
+		{
+			std::cout << result[i][j]<<" ";
+		}
+		std::cout << endl;
+	}
 	vector<float> input;
 	input.push_back(1.0);
 	input.push_back(4.0);
@@ -55,8 +65,8 @@ int main() {
 	//conv2d.load_parameters(weights);
 	//conv2d.execute(input, output);
 	//
-	vector<vector<float>> v = convert(input);
-	std::cout << v.size() << v[0].size() << endl;
+	vector<vector<float>> vv = convert(input);
+	std::cout << vv.size() << vv[0].size() << endl;
 	vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
 	std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;
 	//vector<vector<float>> vout = maxpool.max_filter(v, 1);
@@ -69,7 +79,7 @@ int main() {
 	//Avgpool Avgpool2d2 = Avgpool(4, 4, 1, 3, 1, 0);
 	//Avgpool2d2.execute(input2, output2);
 	Maxpool Maxpool2d2 = Maxpool(4, 4, 1, 3, 1, 0);
-	Maxpool2d2.execute(input2, output2);
+	//Maxpool2d2.execute(input2, output2);
 	//{
 	//	return 0;
 	//	af::array signal = constant(1.f, 3, 3);

@@ -19,6 +19,7 @@ public:
 	int get_padding();
 
 	vector<vector<float>> convert(vector<float> v);
+	vector<vector<float>> vector_padding(vector<vector<float>> v, int p , bool zero); // true means zero padding and false means on padding
 	vector<vector<float>> mean_filter(vector<vector<float>> v, int s = 1 );
 
 	af::array af_mean_filter(af::array v_input, int osz, int wsz, int stride, int padding);
