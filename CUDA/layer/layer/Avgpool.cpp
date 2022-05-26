@@ -60,11 +60,11 @@ vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s 
 	int index = 0;
 	for (row = x; row < numrows-x; row++)
 	{
-		for (col = x; col < numcols-x; col++)
+		for (col = x; col < numcols-x; col+=s)
 		{
 			for (int i = row - x; i < row + x + 1; i++)
 			{
-				for (int j = col - x; j < col + x + 1; j+=s)
+				for (int j = col - x; j < col + x + 1; j++)
 				{
 					window[index] = v_input[i][j];
 					index++;
@@ -132,7 +132,8 @@ vector<vector<float>> Avgpool::vector_padding(vector<vector<float>> v, int p_bit
 		}
 
 	}
-
+	this->set_input_height(result.size());
+	this->set_input_width(result[0].size());
 	return result;
 }
 

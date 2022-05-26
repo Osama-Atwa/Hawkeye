@@ -147,3 +147,105 @@ void Convolution::execute(Array<float>& v_input,Array<float>& v_output) {
 	v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
 	//v_output = values;
 }
+
+
+vector<vector<float>> Convolution::HM_excute(vector<vector<float>> v_input, int strid)
+{
+	const int numrows = get_input_width();
+	int numcols = get_input_height();
+	int row, col;
+	vector<vector<float> > v_output(numrows, vector<float>(numcols));
+
+	vector<float> window;
+
+	int window_size = get_filters_h();
+	window.resize(window_size * window_size);
+	int x = floor(window_size / 2);
+	vector<float> w = weights.get_data();
+	vector<float> res;
+	res.resize(w.size());
+	int v;
+	int index = 0;
+	for (row = x; row < numrows - x; row++)
+	{
+		for (col = x; col < numcols - x; col+= strid)
+		{
+			for (int i = row - x; i < row + x + 1; i++)
+			{
+				for (int j = col - x; j < col + x + 1; j ++)
+				{
+					window[index] = v_input[i][j];
+					index++;
+				}
+			}
+			for (int i = 0; i < w.size(); i++)
+			{
+				res[i] = window[i] * w[i];
+			}
+			v = accumulate(res.begin(), res.end(), 0.0);
+			v_output[row][col] = v;
+			index = 0;
+		}
+	}
+	return v_output;
+}
+
+
+vector<vector<float>> Convolution::vector_padding(vector<vector<float>> v, int p_bits, bool zero)
+{
+	vector<vector<float>> result;
+	result.resize(v.size() + 2 * p_bits);
+
+	vector<float> padding_vec;
+	padding_vec.resize(v[0].size() + 2 * p_bits, 0.0);
+
+	for (int i = 0; i < p_bits; i++)
+	{
+		if (zero)
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 0.0);
+			result[i] = vv;
+			padding_vec[i] = 0.0;
+		}
+		else
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 1.0);
+			result[i] = vv;
+			padding_vec[i] = 1.0;
+		}
+
+	}
+	int index = p_bits + v[0].size();
+	for (int l = 0; l < p_bits; l++)
+	{
+		padding_vec[l + index] = zero ? 0.0 : 1.0;
+	}
+
+	for (int i = 0; i < v.size(); i++)
+	{
+		for (int j = 0; j < v[0].size(); j++)
+		{
+			padding_vec[j + p_bits] = v[i][j];
+		}
+
+		result[p_bits + i] = padding_vec;
+	}
+
+	for (int i = 0; i < p_bits; i++)
+	{
+		if (zero)
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 0.0);
+			result[i + p_bits + v[0].size()] = vv;
+		}
+		else
+		{
+			vector<float> vv(v[0].size() + 2 * p_bits, 1.0);
+			result[i + p_bits + v[0].size()] = vv;
+		}
+
+	}
+	this->set_input_height(result.size());
+	this->set_input_width(result[0].size());
+	return result;
+}

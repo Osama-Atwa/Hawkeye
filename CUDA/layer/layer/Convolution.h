@@ -27,4 +27,6 @@ public:
 
 	void load_parameters(Array<float>& V);
 	void execute(Array<float>& v_input,Array<float>& v_output);
+	vector<vector<float>> HM_excute(vector<vector<float>> v_input, int strid);
+	vector<vector<float>> vector_padding(vector<vector<float>> v, int p_bits, bool zero);
 };

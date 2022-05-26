@@ -10,8 +10,8 @@ using namespace std;
 
 vector<vector<float>> convert(vector<float> v_input)
 {
-    int i_w = 3;
-    int i_h = 3;
+    int i_w = 112;
+    int i_h = 112;
     vector<vector<float>> v_output;
     v_output.resize(i_h);
 
@@ -103,19 +103,26 @@ int main()
     input_.fill_data(input);
     w.fill_data(weights);
     img.fill_data(c);
-
+    vector<vector<float>> input_2d = convert(c);
     conv2d.load_parameters(w);
-    conv2d.execute(img, output);
+    vector<vector<float>> out = conv2d.HM_excute(input_2d, 1);
     //vector<vector<float>> vec = convert(output.get_data());
     //vector<vector<float>> input_2d = convert(input);
-
-    const vector<float>& vec1 = output.get_data();
+    vector<float> f_output;
+    for (int i = 0; i < out.size(); i++)
+    {
+        for (int j = 0; j < out[0].size(); j++)
+        {
+            f_output.push_back(out[i][j]);
+        }
+    }
+    //const vector<float>& vec1 = output.get_data();
 
     //uint8_t** greyArr = setupHMM(vec, 112, 112);
     //uchar* data = convert_char(output.get_data());
     float arr[] = { 1,2,3,4,5,6,7,8,9 };
 
-    cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)vec1.data(),cv::Mat::AUTO_STEP);
+    cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)f_output.data(),cv::Mat::AUTO_STEP);
 
     
     //nnew_image.data = data;
@@ -175,16 +182,20 @@ int main()
 //	weights.push_back(1.0);
 //	weights.push_back(1.0);
 //
-//	vector<vector<float>> v = Avgpool2d.convert(weights);
-//	vector<vector<float>> result = Avgpool2d.vector_padding(v, 2, true);
-//	for (int i = 0; i < result.size(); i++)
+//	vector<int> dim({ 3,3 });
+//	Array<float> w(dim);
+//	w.fill_data(weights);
+//
+//	//vector<vector<float>> v = Avgpool2d.convert(weights);
+//	//vector<vector<float>> result = Avgpool2d.vector_padding(v, 2, true);
+//	/*for (int i = 0; i < result.size(); i++)
 //	{
 //		for (int j = 0; j < result[i].size(); j++)
 //		{
 //			std::cout << result[i][j]<<" ";
 //		}
 //		std::cout << endl;
-//	}
+//	}*/
 //	vector<float> input;
 //	input.push_back(1.0);
 //	input.push_back(4.0);
@@ -195,25 +206,37 @@ int main()
 //	input.push_back(3.0);
 //	input.push_back(6.0);
 //	input.push_back(9.0);
+//	
+//	vector < vector<float>> input_2d = convert(input);
 //	vector<float> output;
 //
-//	//conv2d.load_parameters(weights);
+//	conv2d.load_parameters(w);
+//
+//	input_2d = conv2d.vector_padding(input_2d, 1, true);
+//	vector<vector<float>> vout = conv2d.HM_excute(input_2d, 1);
+//
 //	//conv2d.execute(input, output);
 //	//
-//	vector<vector<float>> vv = convert(input);
-//	std::cout << vv.size() << vv[0].size() << endl;
-//	vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
-//	std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;
+//	//vector<vector<float>> vv = convert(input);
+//	//std::cout << vv.size() << vv[0].size() << endl;
+//	//vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
+//	//std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;
 //	//vector<vector<float>> vout = maxpool.max_filter(v, 1);
 //
 //	//Avgpool2d.load_parameters(weights);
 //	//Avgpool2d.execute(input, output);
 //
-//	vector<float> input2{ 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16 };
-//	vector<float> output2;
+//	//vector<float> input2{ 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16 };
+//	//vector<float> output2;
+//	
 //	//Avgpool Avgpool2d2 = Avgpool(4, 4, 1, 3, 1, 0);
-//	//Avgpool2d2.execute(input2, output2);
-//	Maxpool Maxpool2d2 = Maxpool(4, 4, 1, 3, 1, 0);
+//
+//	//vector<vector<float>> vv = convert(input2);
+//	//vector<vector<float>> result = Avgpool2d2.vector_padding(vv, 1, true);
+//	//vector<vector<float>> vout = Avgpool2d2.mean_filter(result, 2);
+//	//std::cout << vout.size() << "  " << vout[0].size() << "  " << 1 << endl;
+//	////Avgpool2d2.execute(input2, output2);
+//	//Maxpool Maxpool2d2 = Maxpool(4, 4, 1, 3, 1, 0);
 //	//Maxpool2d2.execute(input2, output2);
 //	//{
 //	//	return 0;
@@ -233,12 +256,22 @@ int main()
 //	//	af::print("convolved", convolved);
 //	//	return 0;
 //	//}
+//	//cout << "ss";
+//	for (int i = 0; i < input_2d.size(); i++)
+//	{
+//		for (int j = 0; j < input_2d[i].size(); j++)
+//		{
+//			std::cout << input_2d[i][j] << "     ";
+//		}
+//		std::cout << endl;
+//	}
 //
+//	cout << " " << endl;
 //	for (int i = 0; i < vout.size(); i++)
 //	{
 //		for (int j = 0; j < vout[i].size(); j++)
 //		{
-//			std::cout << vout[i][j];
+//			std::cout << vout[i][j]<<"     ";
 //		}
 //		std::cout << endl;
 //	}
