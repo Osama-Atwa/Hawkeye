@@ -147,20 +147,23 @@ if __name__ == '__main__':
             if not ret:
                 print('Video file finished.')
                 break
+            image = cv2.resize(image,(512,512))
+            croped_image = image[:,120:400]
             start_time = time.time()
-            boxes, confidences, classIDs, idxs = make_prediction(net, layer_names, labels, image, args.confidence, args.threshold)
+            print(args.confidence, args.threshold)
+            boxes, confidences, classIDs, idxs = make_prediction(net, layer_names, labels, croped_image, args.confidence, args.threshold)
             end_time = time.time()
-            #print(classIDs)
-            image = draw_bounding_boxes(image, boxes, confidences, classIDs, idxs, colors)
-            cv2.putText(img=image, text='FPS: '+str(round(1.0/(end_time-start_time),2)), org=(0, 20), fontFace=cv2.FONT_HERSHEY_TRIPLEX, fontScale=1, color=(0, 0, 255),thickness=1)
+            # for key,value in 
+            croped_image = draw_bounding_boxes(croped_image, boxes, confidences, classIDs, idxs, colors)
+            cv2.putText(img=croped_image, text='FPS: '+str(round(1.0/(end_time-start_time),2)), org=(0, 20), fontFace=cv2.FONT_HERSHEY_TRIPLEX, fontScale=1, color=(0, 0, 255),thickness=1)
 
             if args.show:
-                cv2.imshow('YOLO Object Detection', image)
+                cv2.imshow('YOLO Object Detection', croped_image)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
             
             if args.save:
-                out.write(image)
+                out.write(croped_image)
     
         cap.release()
         if args.save:
