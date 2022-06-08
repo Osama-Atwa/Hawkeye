@@ -24,9 +24,13 @@ public:
 	int get_filters_h();
 	int get_stride();
 	int get_padding();
-
+	vector<float> Flatten(vector<vector<float>> v);
 	void load_parameters(Array<float>& V);
 	void execute(Array<float>& v_input,Array<float>& v_output);
+	
 	vector<vector<float>> HM_excute(vector<vector<float>> v_input, int strid);
+	Array<float> HM_excute_Array(Array<float> v_input, int strid);
+	Array<float> HM_excute_Array_Depth(Array<float> v_input, int strid, int DEPTH);
+
 	vector<vector<float>> vector_padding(vector<vector<float>> v, int p_bits, bool zero);
 };

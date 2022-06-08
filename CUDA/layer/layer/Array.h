@@ -15,6 +15,7 @@ public:
     Array();
     Array(vector<int> dimemsions);
     void fill_data(vector<T> arr);
+    void set_dim(vector<int> v);
     const vector<T>& get_data();
     Array(T** arr, int dim0, int dim1);
     Array(T*** arr, int dim0, int dim1, int dim2);
@@ -33,7 +34,10 @@ template<typename T> Array<T>::Array(vector<int> dimemsions)
     }
     data.resize(nelem);
 }
-
+template<typename T> void Array<T>::set_dim(vector<int> v)
+{
+    dim = v;
+}
 template<typename T> void Array<T>::fill_data(vector<T> arr)
 {
     data = arr;
@@ -90,9 +94,8 @@ template<typename T> T Array<T>::operator()(int i0, int i1, int i2, int i3)
     }
     else if (i3 == -1 && i2 != -1)
     {
-        int x = i0 * (dim[0] * dim[1]) + i1 * dim[1] + i2;
+        int x = i2 * (dim[0] * dim[1]) + i1 * dim[1] + i0;
         return data[x];
-
     }
     else if (i3 != -1)
     {
