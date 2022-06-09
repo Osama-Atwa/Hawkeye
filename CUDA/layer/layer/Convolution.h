@@ -10,7 +10,7 @@ private:
 	int stride;
 	int padding;
 	//vector<float> weights;
-	Array<float> weights;
+	vector<Array<float>> weights;
 public:
 	Convolution(int i_w, int i_h, int i_ch, int f_w,int f_h, int no_f, int s, int p);
 	
@@ -25,12 +25,13 @@ public:
 	int get_stride();
 	int get_padding();
 	vector<float> Flatten(vector<vector<float>> v);
-	void load_parameters(Array<float>& V);
+	void load_parameters(vector<Array<float>>& V);
 	void execute(Array<float>& v_input,Array<float>& v_output);
 	
 	vector<vector<float>> HM_excute(vector<vector<float>> v_input, int strid);
 	Array<float> HM_excute_Array(Array<float> v_input, int strid);
-	Array<float> HM_excute_Array_Depth(Array<float> v_input, int strid, int DEPTH);
+	Array<float> HM_excute_Array_Depth(Array<float> v_input, int strid, int p_bits, bool zero, int DEPTH);
 
 	vector<vector<float>> vector_padding(vector<vector<float>> v, int p_bits, bool zero);
+	vector<float> convert_2d_2_1d(vector<vector<float>>v);
 };

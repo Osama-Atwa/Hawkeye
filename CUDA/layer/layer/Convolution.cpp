@@ -1,12 +1,16 @@
-#include "Convolution.h"
+﻿#include "Convolution.h"
 
-Convolution::Convolution(int i_w, int i_h, int i_ch, int f_w, int f_h, int no_f, int s, int p):layer(i_w, i_h, i_ch) {
-	set_no_filters(no_f);
+Convolution::Convolution(int i_w, int i_h, int i_ch, int f_w, int f_h, int no_c, int s, int p):layer(i_w, i_h, i_ch) {
+	set_no_filters(no_c);
 	set_filters_w_h(f_w,f_h);
 	set_stride(s);
 	set_padding(p);
-	vector<int> dim = { f_w,f_h,no_f };
-	weights.set_dim(dim);
+	vector<int> dim = { f_w,f_h,no_c };
+	for (int i = 0; i < weights.size(); i++)
+	{
+		weights[i].set_dim(dim);
+	}
+
 }
 
 void Convolution::set_no_filters(int n) {
@@ -30,9 +34,9 @@ int Convolution::get_filters_w() { return filters_w; }
 int Convolution::get_filters_h() { return filters_h; }
 int Convolution::get_stride() { return stride; }
 int Convolution::get_padding() { return padding; }
-void Convolution::load_parameters(Array<float>& V) {
+void Convolution::load_parameters(vector<Array<float>>& V) {
 
-	weights.fill_data(V.get_data());
+	weights = V;
 }
 
 vector<float> Convolution::Flatten(vector<vector<float>> v)
@@ -122,7 +126,7 @@ void Convolution::execute(Array<float>& v_input,Array<float>& v_output) {
 	af::dim4 dil (1, 1,0,0);
 	//std::cout << s << p << endl;
 	const af::array af_v_input = af::array( i_w, i_h, 1, i_ch, v_input.get_data().data());
-	const af::array af_weights = af::array(f_w,f_h, 1, n_f, this->weights.get_data().data());
+	const af::array af_weights = af::array(f_w,f_h, 1, n_f, this->weights[0].get_data().data());
 	//cout << "stride " << s[0] << " " << s[1] << " " << s[2] << " " << s[3] << endl;
 
 	//cout << "padding " << p[0] << " " << p[1] << " " << p[2] << " " << p[3] << endl;
@@ -158,7 +162,7 @@ vector<vector<float>> Convolution::HM_excute(vector<vector<float>> v_input, int 
 	int window_size = get_filters_h();
 	window.resize(window_size * window_size);
 	int x = floor(window_size / 2);
-	vector<float> w = weights.get_data();
+	vector<float> w = weights[0].get_data();
 	vector<float> res;
 	res.resize(w.size());
 	int v;
@@ -198,7 +202,7 @@ Array<float> Convolution::HM_excute_Array(Array<float> v_input, int strid)
 	int window_size = get_filters_h();
 	window.resize(window_size * window_size);
 	int x = floor(window_size / 2);
-	vector<float> w = weights.get_data();
+	vector<float> w = weights[0].get_data();
 	vector<float> res;
 	res.resize(w.size());
 	int v;
@@ -231,11 +235,67 @@ Array<float> Convolution::HM_excute_Array(Array<float> v_input, int strid)
 	output.fill_data(V_out);
 	return output;
 }
-Array<float> Convolution::HM_excute_Array_Depth(Array<float> v_input, int strid, int DEPTH)
+
+vector<float> Convolution::convert_2d_2_1d(vector<vector<float>>v)
 {
-	const int numrows = get_input_width();
+	vector<float> output;
+	for (int i = 0; i < v.size(); i++)
+	{
+		for (int j = 0; j < v[0].size(); j++)
+		{
+			output.push_back(v[i][j]);
+		}
+	}
+	return output;
+}
+
+Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, int p_bits, bool zero, int DEPTH)
+{
+
+	
+
+	int numrows = get_input_width();
 	int numcols = get_input_height();
 	int row, col;
+
+	vector<float> vec_input;
+	
+	for (int i = 0; i < DEPTH; i++)
+	{
+		vector<vector<float>> channel;
+		vector<float>row_;
+		vector<float> channel_1d;
+		for (int r = 0; r < numrows; r++)
+		{
+			for (int c = 0; c < numcols; c++)
+			{
+				row_.push_back(_input(r, c, i));
+			}
+			channel.push_back(row_);
+			row_.clear();
+		}
+		channel = vector_padding(channel, p_bits, zero);
+		channel_1d = convert_2d_2_1d(channel);
+		if (DEPTH == 0)
+		{
+			vec_input = channel_1d;
+		}
+		else {
+			vec_input.insert(vec_input.end(), channel_1d.begin(), channel_1d.end());
+		}
+	}
+	int new_w = 2 * p_bits + numcols;
+	int new_h = 2 * p_bits + numrows;
+	vector<int> diminsion({ new_h,new_w,DEPTH });
+
+	Array<float> v_input(diminsion);
+	v_input.fill_data(vec_input);
+	
+	this->set_input_height(new_h);
+	this->set_input_width(new_w);
+
+	numcols = new_w;
+	numrows = new_h;
 
 	vector<float> window;
 	int window_h = get_filters_h();
@@ -244,60 +304,93 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> v_input, int strid,
 	int x = floor(window_h / 2);
 
 	vector<vector<float> > v_output(numrows, vector<float>(numcols));
-
-	vector<float> w = weights.get_data();
+	vector<float> c_output;
+//	vector<float> w = weights.get_data();
 	vector<float> res;
 	res.resize(window_h * window_w);
 
 	int v;
 	int index = 0;
-	vector<float> V_out(numrows* numcols);
+	vector<float> V_out;
+	vector<float> result;
 
-	for (int d = 0; d < DEPTH; d++)
+	bool first_time = TRUE;
+	bool first_time_res = TRUE;
+
+	for (int filter_index = 0; filter_index < weights.size(); filter_index++)
 	{
-		for (row = x; row < numrows - x; row++)
+		for (int d = 0; d < DEPTH; d++)
 		{
-			for (col = x; col < numcols - x; col += strid)
+			for (row = x; row < numrows - x; row += strid)
 			{
-				for (int i = row - x; i < row + x + 1; i++)
+				for (col = x; col < numcols - x; col++)
 				{
-					for (int j = col - x; j < col + x + 1; j++)
+					for (int i = row - x; i < row + x + 1; i++)
 					{
-						if (i == 3 && j == 0 )
+						for (int j = col - x; j < col + x + 1; j++)
 						{
-							int x = weights(i, j, d);
+							/*if (i == 3 && j == 0 )
+							{
+								int x = weights(i, j, d);
+							}*/
+							window[index] = v_input(i, j, d);
+							index++;
 						}
-						window[index] = v_input(i, j, d);
-						index++;
 					}
-				}
-				for (int i = 0; i < window_h; i++)
-				{
-					for (int j = 0; j < window_w; j++)
+					for (int i = 0; i < window_h; i++)
 					{
-						//cout << i << " " << j << " " << d << endl;
-						int x = i * window_w + j;
-						//cout << x << " "<< window[x]<<" "<< weights(i, j, d)<<" " <<res[x]<< endl;
-						res[x] = window[x] * weights(i,j,d);
+						for (int j = 0; j < window_w; j++)
+						{
+							//cout << i << " " << j << " " << d << endl;
+							int x = i * window_w + j;
+							//cout << x << " "<< window[x]<<" "<< weights(i, j, d)<<" " <<res[x]<< endl;
+							res[x] = window[x] * weights[filter_index](i, j, d);
+						}
 					}
+					v = accumulate(res.begin(), res.end(), 0.0);
+
+					//v_output[col][row] = v;
+					c_output.push_back(v);
+					/*if (col == 110)
+					{
+						cout << row << " " << col << endl;
+					}*/
+					index = 0;
 				}
-				v = accumulate(res.begin(), res.end(), 0.0);
-
-				v_output[col][row] = v;
-
-				/*if (col == 110)
-				{
-					cout << row << " " << col << endl;
-				}*/
-				index = 0;
 			}
+			//vector<float> vector2 = Convolution::Flatten(v_output);
+			if (first_time)
+			{
+				V_out = c_output;
+				first_time = FALSE;
+			}
+			else
+			{
+				std::transform(V_out.begin(), V_out.end(), c_output.begin(), V_out.begin(), std::plus<float>());
+			}
+			
+			c_output.clear();
 		}
-		vector<float> vector2 = Convolution::Flatten(v_output);
-		std::transform(V_out.begin(), V_out.end(), vector2.begin(), V_out.begin(), std::plus<float>());
+
+		first_time = TRUE;
+		
+		if (first_time_res)
+		{
+			result = V_out;
+			first_time_res = FALSE;
+		}
+		else
+		{
+			result.insert(result.end(), V_out.begin(), V_out.end());
+			V_out.clear();
+		}
 	}
-	vector<int> dim_img({ 112,112 });
+
+
+	int output_size = ((numrows - window_h + 2 * p_bits) / stride) + 1;
+	vector<int> dim_img({ output_size,output_size,(int)weights.size() });
 	Array<float> output(dim_img);
-	output.fill_data(V_out);
+	output.fill_data(result);
 	return output;
 }
 vector<vector<float>> Convolution::vector_padding(vector<vector<float>> v, int p_bits, bool zero)

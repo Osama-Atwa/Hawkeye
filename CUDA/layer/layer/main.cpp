@@ -298,6 +298,10 @@ int main()
 
     Mat r_image;
     resize(r, r_image, Size(down_width, down_height), INTER_LINEAR);
+    
+    //cv::imshow("Grey Copied Image", r);
+    //waitKey(0);
+
     r_image.convertTo(r_image, CV_32F);
     std::vector<float> r_vec((float*)r_image.data, (float*)r_image.data + r_image.rows * r_image.cols);
 
@@ -312,9 +316,9 @@ int main()
     std::vector<float> b_vec((float*)b_image.data, (float*)b_image.data + b_image.rows * b_image.cols);
 
     vector<float> image_vec;
-    image_vec = r_vec;
+    image_vec = b_vec;
     image_vec.insert(image_vec.end(), g_vec.begin(), g_vec.end());
-    image_vec.insert(image_vec.end(), b_vec.begin(), b_vec.end());
+    image_vec.insert(image_vec.end(), r_vec.begin(), r_vec.end());
 
     Convolution conv2d = Convolution(112, 112, 3, 3, 3, 3, 1, 1);
 
@@ -388,11 +392,15 @@ int main()
     Array<float> input_(i_dim);
 
     w.fill_data(weights);
+    vector<Array<float>> ww;
+    ww.push_back(w);
+    ww.push_back(w);
+    ww.push_back(w);
     img.fill_data(image_vec);
     input_.fill_data(input);
-    conv2d.load_parameters(w);
+    conv2d.load_parameters(ww);
     //vector<vector<float>> out = conv2d.HM_excute(input_2d, 1);
-    Array<float> out_img = conv2d.HM_excute_Array_Depth(img, 1,3);
+    Array<float> out_img = conv2d.HM_excute_Array_Depth(img, 1,0,false,3);
 
     //vector<vector<float>> veeeeee({ {1.0,2.0,3.0},{4.0,5.0,6.0},{4.0,5.0,6.0} });
     //vector<float> vv = conv2d.Flatten(veeeeee);
@@ -415,7 +423,8 @@ int main()
 
 
     //cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)f_output.data(),cv::Mat::AUTO_STEP);
-    cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)out_img.get_data().data(), cv::Mat::AUTO_STEP);
+
+    cv::Mat greyImgForArrCopy = cv::Mat(110, 110, CV_32FC1, (float*)out_img.get_data().data(), cv::Mat::AUTO_STEP);
 
 
     //nnew_image.data = data;
