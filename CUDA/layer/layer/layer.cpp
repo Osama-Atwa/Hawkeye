@@ -1,9 +1,9 @@
 #include"layer.h"
 
-layer::layer(int i_w, int i_h, int ch) {
+layer::layer(int i_h, int i_w, int i_ch) {
 	set_input_width(i_w);
 	set_input_height(i_h);
-	set_input_channels(ch);
+	set_input_channels(i_ch);
 }
 
 void layer::set_input_width(int i_w) {

@@ -50,5 +50,8 @@
     <ClCompile Include="Avgpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_templ.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -7,12 +7,12 @@ private:
 	int no_filters;
 	int filters_w;
 	int filters_h;
-	int stride;
+	int strid;
 	int padding;
 	//vector<float> weights;
 	vector<Array<float>> weights;
 public:
-	Convolution(int i_w, int i_h, int i_ch, int f_w,int f_h, int no_f, int s, int p);
+	Convolution(int i_h, int i_w, int i_ch, int f_h, int f_w, int f_ch);
 	
 	void set_no_filters(int n);
 	void set_filters_w_h(int f_w,int f_h);
@@ -30,7 +30,7 @@ public:
 	
 	vector<vector<float>> HM_excute(vector<vector<float>> v_input, int strid);
 	Array<float> HM_excute_Array(Array<float> v_input, int strid);
-	Array<float> HM_excute_Array_Depth(Array<float> v_input, int strid, int p_bits, bool zero, int DEPTH);
+	Array<float> HM_excute_Array_Depth(Array<float> v_input, vector<int> stride, int p_bits, bool zero, int DEPTH);
 
 	vector<vector<float>> vector_padding(vector<vector<float>> v, int p_bits, bool zero);
 	vector<float> convert_2d_2_1d(vector<vector<float>>v);

@@ -1,10 +1,10 @@
-#include"Maxpool.h";
+﻿#include"Maxpool.h";
 
-Maxpool::Maxpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch)
+Maxpool::Maxpool(int i_h, int i_w, int ch, int w_s, int s) :layer(i_h, i_w, ch)
 {
 	set_window_size(w_s);
 	set_stride(s);
-	set_padding(p);
+	//set_padding(p);
 }
 
 
@@ -114,4 +114,65 @@ void Maxpool::execute(Array<float>& v_input, Array<float>& v_output)
 	int arrlen = af_v_output.elements();
 	float* dbl_ptr = af_v_output.host<float>();
 	v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
+}
+Array<float> Maxpool::HM_execute(Array<float> v_input, int s, int DEPTH)
+{
+	const int numrows = get_input_width();
+	int numcols = get_input_height();
+	int row, col;
+
+	vector<vector<float> > v_output(numrows, vector<float>(numcols));
+	vector<float> V_out;
+	vector<float> window;
+
+	int window_size = get_window_size();
+	window.resize(window_size * window_size);
+	int x = floor(window_size / 2);
+	float maximum_v;
+	int index = 0;
+	for (int d = 0; d < DEPTH; d++)
+	{
+		for (row = x; row < numrows - x; row += s)
+		{
+			for (col = x; col < numcols - x; col += s)
+			{
+				if (window_size % 2 == 0)
+				{
+					for (int i = row - x; i < row + x; i++)
+					{
+						for (int j = col - x; j < col + x; j++)
+						{
+							window[index] = v_input(j, i, d);
+							index++;
+						}
+					}
+				}
+				else
+				{
+					for (int i = row - x; i < row + x + 1; i++)
+					{
+						for (int j = col - x; j < col + x + 1; j++)
+						{
+							window[index] = v_input(j, i, d);
+							index++;
+						}
+					}
+				}
+
+				maximum_v = *max_element(window.begin(), window.end());
+				V_out.push_back(maximum_v);
+				index = 0;
+			}
+		}
+	}
+	// W2=(W1−F)/S+1
+	// H2 = (H1−F) / S + 1
+	// D2 = D1
+	int W2 = ((numrows - window_size) / s) + 1;
+	int H2 = ((numcols - window_size) / s) + 1;
+	int D2 = DEPTH;
+	vector<int> dim_img({ W2,H2,D2 });
+	Array<float> output(dim_img);
+	output.fill_data(V_out);
+	return output;
 }

@@ -8,7 +8,7 @@ private:
 	int padding;
 	Array<float> weights;
 public:
-	Avgpool(int i_w, int i_h, int ch, int w_s, int s, int p);
+	Avgpool(int i_h, int i_w,  int ch, int w_s, int s);
 	
 	void set_window_size(int w_s);
 	void set_stride(int s);
@@ -23,6 +23,8 @@ public:
 	vector<vector<float>> mean_filter(vector<vector<float>> v, int s = 1 );
 
 	af::array af_mean_filter(af::array v_input, int osz, int wsz, int stride, int padding);
+
+	Array<float> HM_execute(Array<float> v_input, int s, int DEPTH);
 	
 	void load_parameters(Array<float>& V);
 	void execute(Array<float>& v_input, Array<float>& v_output);

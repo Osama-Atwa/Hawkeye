@@ -1,11 +1,9 @@
 ﻿#include "Convolution.h"
 
-Convolution::Convolution(int i_w, int i_h, int i_ch, int f_w, int f_h, int no_c, int s, int p):layer(i_w, i_h, i_ch) {
-	set_no_filters(no_c);
+Convolution::Convolution(int i_h, int i_w, int i_ch, int f_h, int f_w, int f_ch):layer(i_w, i_h, i_ch) {
+	set_no_filters(f_ch);
 	set_filters_w_h(f_w,f_h);
-	set_stride(s);
-	set_padding(p);
-	vector<int> dim = { f_w,f_h,no_c };
+	vector<int> dim = { f_w,f_h,f_ch };
 	for (int i = 0; i < weights.size(); i++)
 	{
 		weights[i].set_dim(dim);
@@ -22,7 +20,7 @@ void Convolution::set_filters_w_h(int f_w,int f_h) {
 }
 void Convolution::set_stride(int s)
 {
-	stride = s;
+	strid = s;
 }
 void Convolution::set_padding(int p)
 {
@@ -32,7 +30,7 @@ void Convolution::set_padding(int p)
 int Convolution::get_no_filters() { return no_filters; }
 int Convolution::get_filters_w() { return filters_w; }
 int Convolution::get_filters_h() { return filters_h; }
-int Convolution::get_stride() { return stride; }
+int Convolution::get_stride() { return strid; }
 int Convolution::get_padding() { return padding; }
 void Convolution::load_parameters(vector<Array<float>>& V) {
 
@@ -193,8 +191,8 @@ vector<vector<float>> Convolution::HM_excute(vector<vector<float>> v_input, int 
 
 Array<float> Convolution::HM_excute_Array(Array<float> v_input, int strid)
 {
-	const int numrows = get_input_width();
-	int numcols = get_input_height();
+	const int numrows = get_input_height();
+	int numcols = get_input_width();
 	int row, col;
 
 	vector<float> window;
@@ -249,13 +247,13 @@ vector<float> Convolution::convert_2d_2_1d(vector<vector<float>>v)
 	return output;
 }
 
-Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, int p_bits, bool zero, int DEPTH)
+Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, vector<int> strid, int p_bits, bool zero, int DEPTH)
 {
 
 	
 
-	int numrows = get_input_width();
-	int numcols = get_input_height();
+	int numrows = get_input_height();
+	int numcols = get_input_width();
 	int row, col;
 
 	vector<float> vec_input;
@@ -269,7 +267,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, 
 		{
 			for (int c = 0; c < numcols; c++)
 			{
-				row_.push_back(_input(r, c, i));
+				row_.push_back(_input(c, r, i));
 			}
 			channel.push_back(row_);
 			row_.clear();
@@ -321,9 +319,9 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, 
 	{
 		for (int d = 0; d < DEPTH; d++)
 		{
-			for (row = x; row < numrows - x; row += strid)
+			for (row = x; row < numrows - x; row += strid[0])
 			{
-				for (col = x; col < numcols - x; col++)
+				for (col = x; col < numcols - x; col += strid[1])
 				{
 					for (int i = row - x; i < row + x + 1; i++)
 					{
@@ -333,7 +331,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, 
 							{
 								int x = weights(i, j, d);
 							}*/
-							window[index] = v_input(i, j, d);
+							window[index] = v_input(j, i, d);
 							index++;
 						}
 					}
@@ -344,7 +342,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, 
 							//cout << i << " " << j << " " << d << endl;
 							int x = i * window_w + j;
 							//cout << x << " "<< window[x]<<" "<< weights(i, j, d)<<" " <<res[x]<< endl;
-							res[x] = window[x] * weights[filter_index](i, j, d);
+							res[x] = window[x] * weights[filter_index](j, i, d);
 						}
 					}
 					v = accumulate(res.begin(), res.end(), 0.0);
@@ -387,8 +385,9 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, int strid, 
 	}
 
 
-	int output_size = ((numrows - window_h + 2 * p_bits) / stride) + 1;
-	vector<int> dim_img({ output_size,output_size,(int)weights.size() });
+	int output_h = ((numrows - window_h + 2 * p_bits) / strid[0]) + 1;
+	int output_w = ((numcols - window_w + 2 * p_bits) / strid[1]) + 1;
+	vector<int> dim_img({ output_h,output_w,(int)weights.size() });
 	Array<float> output(dim_img);
 	output.fill_data(result);
 	return output;

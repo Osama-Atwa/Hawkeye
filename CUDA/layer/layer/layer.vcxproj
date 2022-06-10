@@ -156,6 +156,7 @@
     <ClCompile Include="Convolution.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_templ.cpp" />
     <ClCompile Include="Maxpool.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -19,7 +19,7 @@ private:
 	int input_height;
 	int input_channels;
 public:
-	layer(int i_w, int i_h, int i_ch);
+	layer(int i_h, int i_w, int i_ch);
 
 	void set_input_width(int i_w);
 	void set_input_height(int i_h);

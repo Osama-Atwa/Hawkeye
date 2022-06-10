@@ -1,10 +1,10 @@
-#include"Avgpool.h";
+﻿#include"Avgpool.h";
 
-Avgpool::Avgpool(int i_w, int i_h, int ch, int w_s, int s, int p) :layer(i_w, i_h, ch)
+Avgpool::Avgpool(int i_h, int i_w, int ch, int w_s, int s) :layer(i_h, i_w,  ch)
 {
 	set_window_size(w_s);
 	set_stride(s);
-	set_padding(p);
+	
 }
 
 void Avgpool::set_window_size(int w_s)
@@ -62,14 +62,29 @@ vector<vector<float>> Avgpool::mean_filter(vector<vector<float>> v_input, int s 
 	{
 		for (col = x; col < numcols-x; col+=s)
 		{
-			for (int i = row - x; i < row + x + 1; i++)
+			if (window_size % 2 == 0)
 			{
-				for (int j = col - x; j < col + x + 1; j++)
+				for (int i = row - x; i < row + x; i++)
 				{
-					window[index] = v_input[i][j];
-					index++;
+					for (int j = col - x; j < col + x; j++)
+					{
+						window[index] = v_input[i][j];
+						index++;
+					}
 				}
 			}
+			else
+			{
+				for (int i = row - x; i < row + x + 1; i++)
+				{
+					for (int j = col - x; j < col + x + 1; j++)
+					{
+						window[index] = v_input[i][j];
+						index++;
+					}
+				}
+			}
+			
 			avg = accumulate(window.begin(), window.end(), 0.0) / window.size();
 			v_output[row][col] = avg;
 			index = 0;
@@ -148,6 +163,67 @@ af::array Avgpool::af_mean_filter(af::array v_input, int osz, int wsz, int strid
 	return res;
 }
 
+Array<float> Avgpool::HM_execute(Array<float> v_input, int s, int DEPTH)
+{
+	int  numcols = get_input_width();
+	int  numrows = get_input_height();
+	int row, col;
+	
+	vector<vector<float> > v_output(numrows, vector<float>(numcols));
+	vector<float> V_out;
+	vector<float> window;
+
+	int window_size = get_window_size();
+	window.resize(window_size * window_size);
+	int x = floor(window_size / 2);
+	float avg;
+	int index = 0;
+	for (int d = 0; d < DEPTH; d++)
+	{
+		for (row = x; row < numrows - x; row += s)
+		{
+			for (col = x; col < numcols - x; col += s)
+			{
+				if (window_size % 2 == 0)
+				{
+					for (int i = row - x; i < row + x; i++)
+					{
+						for (int j = col - x; j < col + x; j++)
+						{
+							window[index] = v_input(j,i,d);
+							index++;
+						}
+					}
+				}
+				else
+				{
+					for (int i = row - x; i < row + x + 1; i++)
+					{
+						for (int j = col - x; j < col + x + 1; j++)
+						{
+							window[index] = v_input(j, i, d);
+							index++;
+						}
+					}
+				}
+
+				avg = accumulate(window.begin(), window.end(), 0.0) / window.size();
+				V_out.push_back(avg);
+				index = 0;
+			}
+		}
+	}
+	// W2=(W1−F)/S+1
+	// H2 = (H1−F) / S + 1
+	// D2 = D1
+	int W2 = ((numrows - window_size) / s) + 1;
+	int H2 = ((numcols - window_size) / s) + 1;
+	int D2 = DEPTH;
+	vector<int> dim_img({ W2,H2,D2 });
+	Array<float> output(dim_img);
+	output.fill_data(V_out);
+	return output;
+}
 void Avgpool::load_parameters(Array<float>& V)
 {
 	weights.fill_data(V.get_data());

@@ -53,418 +53,167 @@ uint8_t** setupHMM(vector<vector<float> >& vals, int N, int M)
     }
     return temp;
 }
-// Driver code
-//int main()
-//{
-//    // Read the image file as
-//    // imread("default.jpg");
-//    Mat image = imread("dog.jpg", IMREAD_GRAYSCALE);
-//    int down_width = 112;
-//    int down_height = 112;
-//    //Mat nnew_image;
-//    Mat new_image;
-//    resize(image, new_image, Size(down_width, down_height), INTER_LINEAR);
-//    new_image.convertTo(new_image, CV_32F);
-//    std::vector<float> c((float*)new_image.data, (float*)new_image.data + new_image.rows * new_image.cols);
-//    
-//    Convolution conv2d = Convolution(112, 112, 1, 3, 3, 1, 1, 1);
-//    
-//    vector<float> input;
-//    input.push_back(1.0);
-//    input.push_back(2.0);
-//    input.push_back(3.0);
-//    input.push_back(4.0);
-//    input.push_back(5.0);
-//    input.push_back(6.0);
-//    input.push_back(7.0);
-//    input.push_back(8.0);
-//    input.push_back(9.0);
-//
-//
-//    vector<float> weights;
-//    weights.push_back(1.0 );
-//    weights.push_back(1.0 );
-//    weights.push_back(1.0 );
-//    weights.push_back(0.0);
-//    weights.push_back(0.0);
-//    weights.push_back(0.0);
-//    weights.push_back(-1.0);
-//    weights.push_back(-1.0);
-//    weights.push_back(-1.0);
-//
-//    //weights.insert(weights.end(), input.begin(), input.end());
-//
-//    vector<int> dim({ 3,3 });
-//    vector<int> dim_img({ new_image.rows,new_image.cols });
-//
-//    Array<float> w(dim);
-//    Array<float> img(dim_img);
-//    Array<float> output(dim_img);
-//    Array<float> input_(dim);
-//
-//    input_.fill_data(input);
-//    w.fill_data(weights);
-//    img.fill_data(c);
-//    vector<vector<float>> input_2d = convert(c);
-//    conv2d.load_parameters(w);
-//    //vector<vector<float>> out = conv2d.HM_excute(input_2d, 1);
-//    Array<float> out_img = conv2d.HM_excute_Array(img, 1);
-//    //vector<vector<float>> vec = convert(output.get_data());
-//    //vector<vector<float>> input_2d = convert(input);
-//    /*vector<float> f_output;
-//    for (int i = 0; i < out.size(); i++)
-//    {
-//        for (int j = 0; j < out[0].size(); j++)
-//        {
-//            f_output.push_back(out[i][j]);
-//        }
-//    }*/
-//    //const vector<float>& vec1 = output.get_data();
-//
-//    //uint8_t** greyArr = setupHMM(vec, 112, 112);
-//    //uchar* data = convert_char(output.get_data());
-//    float arr[] = { 1,2,3,4,5,6,7,8,9 };
-//
-//    //cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)f_output.data(),cv::Mat::AUTO_STEP);
-//    cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)out_img.get_data().data(), cv::Mat::AUTO_STEP);
-//
-//    
-//    //nnew_image.data = data;
-//    // 
-//    greyImgForArrCopy.convertTo(greyImgForArrCopy, CV_8U);
-//    //cout << greyImgForArrCopy;
-//
-//    cv::imshow("Grey Copied Image", greyImgForArrCopy);
-//
-//    //if (output_img.empty()) {
-//    //    cout << "Image File "
-//    //        << "Not Found" << endl;
-//
-//    //    // wait for any key press
-//    //    cin.get();
-//    //    return -1;
-//    //}
-//
-//    //// Show Image inside a window with
-//    //// the name provided
-//    //imshow("Window Name", greyImg);
-//
-//    //// Wait for any keystroke
-//    /*for (int i = 0; i < input_2d.size(); i++)
-//    {
-//        for (int j = 0; j < input_2d[i].size(); j++)
-//        {
-//            std::cout << input_2d[i][j] << " ";
-//        }
-//        std::cout << endl;
-//    }*/
-//
-//    /*for (int i = 0; i < vec.size(); i++)
-//    {
-//        for (int j = 0; j < vec[i].size(); j++)
-//        {
-//        	std::cout << vec[i][j]<<" ";
-//        }
-//        std::cout << endl;
-//    }*/
-//    waitKey(0);
-//    return 0;
-//}
-//int main() {
-//	Convolution conv2d = Convolution(3, 3, 1, 3, 3, 1, 1, 1);
-//	Avgpool Avgpool2d = Avgpool(3, 3, 1, 3, 1, 0);
-//	Maxpool maxpool = Maxpool(3, 3, 1, 3, 1, 0);
-//
-//	vector<float> weights;
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//	weights.push_back(1.0);
-//
-//	vector<int> dim({ 3,3 });
-//	Array<float> w(dim);
-//	w.fill_data(weights);
-//
-//	//vector<vector<float>> v = Avgpool2d.convert(weights);
-//	//vector<vector<float>> result = Avgpool2d.vector_padding(v, 2, true);
-//	/*for (int i = 0; i < result.size(); i++)
-//	{
-//		for (int j = 0; j < result[i].size(); j++)
-//		{
-//			std::cout << result[i][j]<<" ";
-//		}
-//		std::cout << endl;
-//	}*/
-//	vector<float> input;
-//	input.push_back(1.0);
-//	input.push_back(4.0);
-//	input.push_back(7.0);
-//	input.push_back(2.0);
-//	input.push_back(5.0);
-//	input.push_back(8.0);
-//	input.push_back(3.0);
-//	input.push_back(6.0);
-//	input.push_back(9.0);
-//	
-//	vector < vector<float>> input_2d = convert(input);
-//	vector<float> output;
-//
-//	conv2d.load_parameters(w);
-//
-//	input_2d = conv2d.vector_padding(input_2d, 1, true);
-//	vector<vector<float>> vout = conv2d.HM_excute(input_2d, 1);
-//
-//	//conv2d.execute(input, output);
-//	//
-//	//vector<vector<float>> vv = convert(input);
-//	//std::cout << vv.size() << vv[0].size() << endl;
-//	//vector<vector<float>> vout = Avgpool2d.mean_filter(v,1);
-//	//std::cout << vout.size() <<"  " << vout[0].size() <<"  "<< 1 << endl;
-//	//vector<vector<float>> vout = maxpool.max_filter(v, 1);
-//
-//	//Avgpool2d.load_parameters(weights);
-//	//Avgpool2d.execute(input, output);
-//
-//	//vector<float> input2{ 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16 };
-//	//vector<float> output2;
-//	
-//	//Avgpool Avgpool2d2 = Avgpool(4, 4, 1, 3, 1, 0);
-//
-//	//vector<vector<float>> vv = convert(input2);
-//	//vector<vector<float>> result = Avgpool2d2.vector_padding(vv, 1, true);
-//	//vector<vector<float>> vout = Avgpool2d2.mean_filter(result, 2);
-//	//std::cout << vout.size() << "  " << vout[0].size() << "  " << 1 << endl;
-//	////Avgpool2d2.execute(input2, output2);
-//	//Maxpool Maxpool2d2 = Maxpool(4, 4, 1, 3, 1, 0);
-//	//Maxpool2d2.execute(input2, output2);
-//	//{
-//	//	return 0;
-//	//	af::array signal = constant(1.f, 3, 3);
-//	//	signal(0,0) = 1; signal(0, 1) = 2; signal(0, 2) = 3; signal(1, 0) = 4; signal(1, 1) = 5; signal(1, 2) = 6; signal(2, 0) = 7; signal(2, 1) = 8; signal(2, 2) = 9;
-//	//	af::array filter = constant(0 , 3, 3);
-//	//	//filter(0, 0) = 1; filter(0, 1) = 2; filter(0, 2) = 3; filter(1, 0) = 4; filter(1, 1) = 5; filter(1, 2) = 6; filter(2, 0) = 7; filter(2, 1) = 8; filter(2, 2) = 9;
-//	//	//filter(0, 0) = -1; filter(0, 1) = -2; filter(0, 2) = -1; filter(1, 0) = 0; filter(1, 1) = 0; filter(1, 2) = 0; filter(2, 0) = 1; filter(2, 1) = 2; filter(2, 2) = 1;
-//	//	filter(1, 1) = 1;
-//	//	filter(2, 1) = 1;
-//	//	dim4 strides(1, 1), dilation(0, 0, 0, 0);
-//	//	dim4 padding(1, 1, 1, 1);
-//
-//	//	af::array convolved = convolve2NN(signal, filter, strides, padding, dilation);
-//	//	af::print("signal", signal);
-//	//	af::print("filter", filter);
-//	//	af::print("convolved", convolved);
-//	//	return 0;
-//	//}
-//	//cout << "ss";
-//	for (int i = 0; i < input_2d.size(); i++)
-//	{
-//		for (int j = 0; j < input_2d[i].size(); j++)
-//		{
-//			std::cout << input_2d[i][j] << "     ";
-//		}
-//		std::cout << endl;
-//	}
-//
-//	cout << " " << endl;
-//	for (int i = 0; i < vout.size(); i++)
-//	{
-//		for (int j = 0; j < vout[i].size(); j++)
-//		{
-//			std::cout << vout[i][j]<<"     ";
-//		}
-//		std::cout << endl;
-//	}
-//	return 0;
-//}
-int main()
+Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights)
 {
-    // Read the image file as
-    // imread("default.jpg");
+    int i_h = input.get_dim()[0];
+    int i_w = input.get_dim()[1];
+    int i_depth = input.get_dim()[2];
+
+    Convolution conv2d_1 = Convolution(i_h, i_w, i_depth, 1, 1, i_depth);
+    conv2d_1.load_parameters(weights[0]);
+    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, {1, 1}, 1, TRUE, i_depth);
+
+    int s_h = squeeze.get_dim()[0];
+    int s_w = squeeze.get_dim()[1];
+    int s_depth = squeeze.get_dim()[2];
+
+    Convolution conv2d_2 = Convolution(s_h, s_w, s_depth, 1, 1, s_depth);
+    conv2d_2.load_parameters(weights[1]);
+    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, { 1, 1 }, 1, TRUE, s_depth);
+
+    Convolution conv2d_3 = Convolution(s_h, s_w, s_depth, 3, 3, s_depth);
+    conv2d_3.load_parameters(weights[2]);
+    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, { 1, 1 }, 1, TRUE, squeeze.get_dim()[2]);
+    
+    int x_h = expand1.get_dim()[0];
+    int x_w = expand1.get_dim()[1];
+    int x_depth = expand1.get_dim()[2];
+    int x2_depth = expand2.get_dim()[2];
+
+    vector<float> V_out;
+    V_out = expand1.get_data();
+    V_out.insert(V_out.end(), expand2.get_data().begin(), expand2.get_data().end());
+
+    vector<int> dim({ x_h,x_w,x_depth + x2_depth });
+
+    Array<float> result;
+
+    result.set_dim(dim);
+    result.fill_data(V_out);
+
+    return result;
+}
+void SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights ,int nb_classes)
+{
+    int i_h = v_input.get_dim()[0];
+    int i_w = v_input.get_dim()[1];
+    int i_depth = v_input.get_dim()[2];
+    Convolution conv1 = Convolution(i_h, i_w, i_depth, 3, 3, i_depth);
+    conv1.load_parameters(weights[0]);
+    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_input, { 2,2 }, 0, FALSE, i_depth);
+
+    int c1_h = conv1_out.get_dim()[0];
+    int c1_w = conv1_out.get_dim()[1];
+    int c1_depth = conv1_out.get_dim()[2];
+    Maxpool maxpool1 = Maxpool(c1_h, c1_w, c1_depth, 3, 2);
+    Array<float> max1_out = maxpool1.HM_execute(conv1_out, 2, c1_depth);
+
+    vector<vector<Array<float>>> fire1_weights;
+    fire1_weights.push_back(weights[1]);
+    fire1_weights.push_back(weights[2]);
+    fire1_weights.push_back(weights[3]);
+    Array<float> Fire1 = FireModule(max1_out, fire1_weights);
+
+    vector<vector<Array<float>>> fire2_weights;
+    fire2_weights.push_back(weights[4]);
+    fire2_weights.push_back(weights[5]);
+    fire2_weights.push_back(weights[6]);
+    Array<float> Fire2 = FireModule(Fire1, fire2_weights);
+
+    int f2_h = Fire2.get_dim()[0];
+    int f2_w = Fire2.get_dim()[1];
+    int f2_depth = Fire2.get_dim()[2];
+    Maxpool maxpool2 = Maxpool(f2_h, f2_w, f2_depth, 3, 2);
+    Array<float> max2_out = maxpool2.HM_execute(Fire2, 2, f2_depth);
+
+    vector<vector<Array<float>>> fire3_weights;
+    fire3_weights.push_back(weights[7]);
+    fire3_weights.push_back(weights[8]);
+    fire3_weights.push_back(weights[9]);
+    Array<float> Fire3 = FireModule(max2_out, fire3_weights);
+
+    vector<vector<Array<float>>> fire4_weights;
+    fire4_weights.push_back(weights[10]);
+    fire4_weights.push_back(weights[11]);
+    fire4_weights.push_back(weights[12]);
+    Array<float> Fire4 = FireModule(Fire3, fire4_weights);
+
+    int f4_h = Fire4.get_dim()[0];
+    int f4_w = Fire4.get_dim()[1];
+    int f4_depth = Fire4.get_dim()[2];
+    Maxpool maxpool3 = Maxpool(f4_h, f4_w, f4_depth, 3, 2);
+    Array<float> max3_out = maxpool3.HM_execute(Fire4, 2, f4_depth);
+
+    vector<vector<Array<float>>> fire5_weights;
+    fire5_weights.push_back(weights[13]);
+    fire5_weights.push_back(weights[14]);
+    fire5_weights.push_back(weights[15]);
+    Array<float> Fire5 = FireModule(max3_out, fire5_weights);
+
+    vector<vector<Array<float>>> fire6_weights;
+    fire6_weights.push_back(weights[16]);
+    fire6_weights.push_back(weights[17]);
+    fire6_weights.push_back(weights[18]);
+    Array<float> Fire6 = FireModule(Fire5, fire6_weights);
+
+    vector<vector<Array<float>>> fire7_weights;
+    fire7_weights.push_back(weights[19]);
+    fire7_weights.push_back(weights[20]);
+    fire7_weights.push_back(weights[21]);
+    Array<float> Fire7 = FireModule(Fire6, fire7_weights);
+
+    vector<vector<Array<float>>> fire8_weights;
+    fire8_weights.push_back(weights[22]);
+    fire8_weights.push_back(weights[23]);
+    fire8_weights.push_back(weights[24]);
+    Array<float> Fire8 = FireModule(Fire7, fire8_weights);
+
+    int f8_h = Fire8.get_dim()[0];
+    int f8_w = Fire8.get_dim()[1];
+    int f8_depth = Fire8.get_dim()[2];
+    Convolution conv2 = Convolution(f8_h, f8_w, f8_depth, 1, 1, f8_depth);
+    conv2.load_parameters(weights[25]);
+    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, { 1,1 }, 1, FALSE, f8_depth);
+
+}
+
+void main() {
     Mat image = imread("dog.jpg");
     int down_width = 112;
     int down_height = 112;
+
     //Mat nnew_image;
     Mat different_Channels[3];
     split(image, different_Channels);
-
+    
     Mat b = different_Channels[0];//loading blue channels//
     Mat g = different_Channels[1];//loading green channels//
     Mat r = different_Channels[2];//loading red channels//  
-
-    Mat r_image;
-    resize(r, r_image, Size(down_width, down_height), INTER_LINEAR);
     
-    //cv::imshow("Grey Copied Image", r);
+    Mat r_image;
+    
+    resize(r, r_image, Size(down_width, down_height), INTER_LINEAR);
+        
+    //cv::imshow("Grey Copied Image", image);
     //waitKey(0);
-
+    
     r_image.convertTo(r_image, CV_32F);
     std::vector<float> r_vec((float*)r_image.data, (float*)r_image.data + r_image.rows * r_image.cols);
-
+    
     Mat g_image;
     resize(g, g_image, Size(down_width, down_height), INTER_LINEAR);
     g_image.convertTo(g_image, CV_32F);
     std::vector<float> g_vec((float*)g_image.data, (float*)g_image.data + g_image.rows * g_image.cols);
-
+    
     Mat b_image;
     resize(b, b_image, Size(down_width, down_height), INTER_LINEAR);
     b_image.convertTo(b_image, CV_32F);
     std::vector<float> b_vec((float*)b_image.data, (float*)b_image.data + b_image.rows * b_image.cols);
-
+    
     vector<float> image_vec;
     image_vec = b_vec;
     image_vec.insert(image_vec.end(), g_vec.begin(), g_vec.end());
     image_vec.insert(image_vec.end(), r_vec.begin(), r_vec.end());
-
-    Convolution conv2d = Convolution(112, 112, 3, 3, 3, 3, 1, 1);
-
-    vector<float> weights;
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(1.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(0.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
-    weights.push_back(-1.0);
     
-    vector<float> input;
-    input.push_back(1.0);
-    input.push_back(4.0);
-    input.push_back(7.0);
-    input.push_back(2.0);
-    input.push_back(5.0);
-    input.push_back(8.0);
-    input.push_back(3.0);
-    input.push_back(6.0);
-    input.push_back(9.0);
 
-    input.push_back(1.0);
-    input.push_back(4.0);
-    input.push_back(7.0);
-    input.push_back(2.0);
-    input.push_back(5.0);
-    input.push_back(8.0);
-    input.push_back(3.0);
-    input.push_back(6.0);
-    input.push_back(9.0);
-
-    input.push_back(1.0);
-    input.push_back(4.0);
-    input.push_back(7.0);
-    input.push_back(2.0);
-    input.push_back(5.0);
-    input.push_back(8.0);
-    input.push_back(3.0);
-    input.push_back(6.0);
-    input.push_back(9.0);
-
-
-    vector<int> dim({ 3,3,3 });
-    vector<int> dim_img({ 112,112,3 });
-    vector<int> i_dim({ 3,3,3 });
-
-    Array<float> w(dim);
-    Array<float> img(dim_img);
-    Array<float> input_(i_dim);
-
-    w.fill_data(weights);
-    vector<Array<float>> ww;
-    ww.push_back(w);
-    ww.push_back(w);
-    ww.push_back(w);
-    img.fill_data(image_vec);
-    input_.fill_data(input);
-    conv2d.load_parameters(ww);
-    //vector<vector<float>> out = conv2d.HM_excute(input_2d, 1);
-    Array<float> out_img = conv2d.HM_excute_Array_Depth(img, 1,0,false,3);
-
-    //vector<vector<float>> veeeeee({ {1.0,2.0,3.0},{4.0,5.0,6.0},{4.0,5.0,6.0} });
-    //vector<float> vv = conv2d.Flatten(veeeeee);
-    //vector<vector<float>> vec;
-    // 
-    // 
-    //vector<vector<float>> input_2d = convert(input);
-    /*vector<float> f_output;
-    for (int i = 0; i < out.size(); i++)
-    {
-        for (int j = 0; j < out[0].size(); j++)
-        {
-            f_output.push_back(out[i][j]);
-        }
-    }*/
-    //const vector<float>& vec1 = output.get_data();
-
-    //uint8_t** greyArr = setupHMM(vec, 112, 112);
-    //uchar* data = convert_char(output.get_data());
-
-
-    //cv::Mat greyImgForArrCopy = cv::Mat(112, 112, CV_32FC1, (float*)f_output.data(),cv::Mat::AUTO_STEP);
-
-    cv::Mat greyImgForArrCopy = cv::Mat(110, 110, CV_32FC1, (float*)out_img.get_data().data(), cv::Mat::AUTO_STEP);
-
-
-    //nnew_image.data = data;
-    // 
-    greyImgForArrCopy.convertTo(greyImgForArrCopy, CV_8U);
-    //cout << greyImgForArrCopy;
-
-    cv::imshow("Grey Copied Image", greyImgForArrCopy);
-    
-    //if (output_img.empty()) {
-    //    cout << "Image File "
-    //        << "Not Found" << endl;
-
-    //    // wait for any key press
-    //    cin.get();
-    //    return -1;
-    //}
-
-    //// Show Image inside a window with
-    //// the name provided
-    //imshow("Window Name", greyImg);
-
-    //// Wait for any keystroke
-    /*for (int i = 0; i < input_2d.size(); i++)
-    {
-        for (int j = 0; j < input_2d[i].size(); j++)
-        {
-            std::cout << input_2d[i][j] << " ";
-        }
-        std::cout << endl;
-    }*/
-
-    /*for (int i = 0; i < vec.size(); i++)
-    {
-        for (int j = 0; j < vec[i].size(); j++)
-        {
-            std::cout << vec[i][j]<<" ";
-        }
-        std::cout << endl;
-    }*/
-    waitKey(0);
-    return 0;
 }
