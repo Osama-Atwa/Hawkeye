@@ -215,5 +215,56 @@ void main() {
     image_vec.insert(image_vec.end(), g_vec.begin(), g_vec.end());
     image_vec.insert(image_vec.end(), r_vec.begin(), r_vec.end());
     
+    vector<int> dim_img({ 112,112,3 });
+    Array<float> img(dim_img);
+    img.fill_data(image_vec);
+
+    vector<float> weights;
+    {
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0);
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0);
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(1.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(0.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0);
+        weights.push_back(-1.0); 
+    }
+
+    vector<int> dim({ 3,3,3 });
+    Array<float> w(dim);
+
+    w.fill_data(weights);
+    vector<Array<float>> ww;
+    ww.push_back(w);
+    ww.push_back(w);
+    ww.push_back(w);
+
+    vector<vector<Array<float>>> www;
+    www.push_back(ww);
+    www.push_back(ww);
+    www.push_back(ww);
+
+    
+    SqueezeNetV1_1(img, www, 3);
 
 }
