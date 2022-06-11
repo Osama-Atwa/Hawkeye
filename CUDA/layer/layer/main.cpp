@@ -61,10 +61,10 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
     int i_h = input.get_dim()[0];
     int i_w = input.get_dim()[1];
     int i_depth = input.get_dim()[2];
-
+    
     Convolution conv2d_1 = Convolution(i_h, i_w, i_depth, 1, 1, i_depth);
     conv2d_1.load_parameters(weights[0]);
-    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, bias[0], {1, 1}, 1, true, i_depth);
+    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, bias[0], {1, 1}, 0, true, i_depth);
 
     int s_h = squeeze.get_dim()[0];
     int s_w = squeeze.get_dim()[1];
@@ -72,11 +72,11 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     Convolution conv2d_2 = Convolution(s_h, s_w, s_depth, 1, 1, s_depth);
     conv2d_2.load_parameters(weights[1]);
-    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, bias[1], { 1, 1 }, 1, true, s_depth);
+    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, bias[1], { 1, 1 }, 0, true, s_depth);
 
     Convolution conv2d_3 = Convolution(s_h, s_w, s_depth, 3, 3, s_depth);
     conv2d_3.load_parameters(weights[2]);
-    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, bias[2], { 1, 1 }, 1, true, squeeze.get_dim()[2]);
+    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, bias[2], { 1, 1 }, 2, true, squeeze.get_dim()[2]);
     
     int x_h = expand1.get_dim()[0];
     int x_w = expand1.get_dim()[1];
@@ -109,9 +109,13 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     int c1_h = conv1_out.get_dim()[0];
     int c1_w = conv1_out.get_dim()[1];
     int c1_depth = conv1_out.get_dim()[2];
+
+    cout << endl << "Layer : conv1_out" << "(" << c1_h << "," << c1_w << "," << c1_depth << ")" << endl;
+
     Maxpool maxpool1 = Maxpool(c1_h, c1_w, c1_depth, 3, 2);
     Array<float> max1_out = maxpool1.HM_execute(conv1_out, 2, c1_depth);
-
+    cout << endl << "Layer : maxpool1" << "(" << max1_out.get_dim()[0] << "," << max1_out.get_dim()[1] << "," << max1_out.get_dim()[2] << ")" << endl;
+    
     vector<vector<Array<float>>> fire1_weights;
     fire1_weights.push_back(weights[1]);
     fire1_weights.push_back(weights[2]);
@@ -121,6 +125,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f1_bias.push_back(bias[2]);
     f1_bias.push_back(bias[3]);
     Array<float> Fire1 = FireModule(max1_out, fire1_weights, f1_bias);
+    cout << endl << "Layer : Fire1" << "(" << Fire1.get_dim()[0] << "," << Fire1.get_dim()[1] << "," << Fire1.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire2_weights;
     fire2_weights.push_back(weights[4]);
@@ -131,12 +136,14 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f2_bias.push_back(bias[5]);
     f2_bias.push_back(bias[6]);
     Array<float> Fire2 = FireModule(Fire1, fire2_weights, f2_bias);
+    cout << endl << "Layer : Fire2" << "(" << Fire2.get_dim()[0] << "," << Fire2.get_dim()[1] << "," << Fire2.get_dim()[2] << ")" << endl;
 
     int f2_h = Fire2.get_dim()[0];
     int f2_w = Fire2.get_dim()[1];
     int f2_depth = Fire2.get_dim()[2];
     Maxpool maxpool2 = Maxpool(f2_h, f2_w, f2_depth, 3, 2);
     Array<float> max2_out = maxpool2.HM_execute(Fire2, 2, f2_depth);
+    cout << endl << "Layer : max2_out" << "(" << max2_out.get_dim()[0] << "," << max2_out.get_dim()[1] << "," << max2_out.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire3_weights;
     fire3_weights.push_back(weights[7]);
@@ -147,6 +154,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f3_bias.push_back(bias[8]);
     f3_bias.push_back(bias[9]);
     Array<float> Fire3 = FireModule(max2_out, fire3_weights, f3_bias);
+    cout << endl << "Layer : Fire3" << "(" << Fire3.get_dim()[0] << "," << Fire3.get_dim()[1] << "," << Fire3.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire4_weights;
     fire4_weights.push_back(weights[10]);
@@ -157,12 +165,14 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f4_bias.push_back(bias[11]);
     f4_bias.push_back(bias[12]);
     Array<float> Fire4 = FireModule(Fire3, fire4_weights,f4_bias);
+    cout << endl << "Layer : Fire4" << "(" << Fire4.get_dim()[0] << "," << Fire4.get_dim()[1] << "," << Fire4.get_dim()[2] << ")" << endl;
 
     int f4_h = Fire4.get_dim()[0];
     int f4_w = Fire4.get_dim()[1];
     int f4_depth = Fire4.get_dim()[2];
     Maxpool maxpool3 = Maxpool(f4_h, f4_w, f4_depth, 3, 2);
     Array<float> max3_out = maxpool3.HM_execute(Fire4, 2, f4_depth);
+    cout << endl << "Layer : max3_out" << "(" << max3_out.get_dim()[0] << "," << max3_out.get_dim()[1] << "," << max3_out.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire5_weights;
     fire5_weights.push_back(weights[13]);
@@ -173,6 +183,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f5_bias.push_back(bias[14]);
     f5_bias.push_back(bias[15]);
     Array<float> Fire5 = FireModule(max3_out, fire5_weights, f5_bias);
+    cout << endl << "Layer : Fire5" << "(" << Fire5.get_dim()[0] << "," << Fire5.get_dim()[1] << "," << Fire5.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire6_weights;
     fire6_weights.push_back(weights[16]);
@@ -183,6 +194,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f6_bias.push_back(bias[17]);
     f6_bias.push_back(bias[18]);
     Array<float> Fire6 = FireModule(Fire5, fire6_weights, f6_bias);
+    cout << endl << "Layer : Fire6" << "(" << Fire6.get_dim()[0] << "," << Fire6.get_dim()[1] << "," << Fire6.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire7_weights;
     fire7_weights.push_back(weights[19]);
@@ -193,6 +205,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f7_bias.push_back(bias[20]);
     f7_bias.push_back(bias[21]);
     Array<float> Fire7 = FireModule(Fire6, fire7_weights, f7_bias);
+    cout << endl << "Layer : Fire7" << "(" << Fire7.get_dim()[0] << "," << Fire7.get_dim()[1] << "," << Fire7.get_dim()[2] << ")" << endl;
 
     vector<vector<Array<float>>> fire8_weights;
     fire8_weights.push_back(weights[22]);
@@ -203,19 +216,22 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     f8_bias.push_back(bias[23]);
     f8_bias.push_back(bias[24]);
     Array<float> Fire8 = FireModule(Fire7, fire8_weights, f8_bias);
+    cout << endl << "Layer : Fire8" << "(" << Fire8.get_dim()[0] << "," << Fire8.get_dim()[1] << "," << Fire8.get_dim()[2] << ")" << endl;
 
     int f8_h = Fire8.get_dim()[0];
     int f8_w = Fire8.get_dim()[1];
     int f8_depth = Fire8.get_dim()[2];
     Convolution conv2 = Convolution(f8_h, f8_w, f8_depth, 1, 1, f8_depth);
     conv2.load_parameters(weights[25]);
-    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, bias[25], { 1,1 }, 1, false, f8_depth);
+    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, bias[25], { 1,1 }, 0, false, f8_depth);
+    cout << endl << "Layer : conv2_out" << "(" << conv2_out.get_dim()[0] << "," << conv2_out.get_dim()[1] << "," << conv2_out.get_dim()[2] << ")" << endl;
 
     int c2_h = conv2_out.get_dim()[0];
     int c2_w = conv2_out.get_dim()[1];
     int c2_d = conv2_out.get_dim()[2];
     Avgpool avg1 = Avgpool(c2_h, c2_w, c2_d, 13, 1);
     Array<float> av1_out = avg1.HM_execute(conv2_out, 1, c2_d);
+    cout << endl << "Layer : av1_out" << "(" << av1_out.get_dim()[0] << "," << av1_out.get_dim()[1] << "," << av1_out.get_dim()[2] << ")" << endl;
     return av1_out;
 }
 
@@ -227,7 +243,7 @@ void LoadWeightsForLayer(string layername, int layernum, int out_ch, int in_ch, 
     weights[layernum].resize(out_ch);
     for (size_t i = 0; i < out_ch; i++)
     {
-        weights[layernum][i] = Array<float>({ cols, rows, in_ch });
+        weights[layernum][i] = Array<float>({ rows, cols, in_ch });
     }
 
     for (size_t och = 0; och < out_ch; och++) // for each output channel
@@ -239,7 +255,7 @@ void LoadWeightsForLayer(string layername, int layernum, int out_ch, int in_ch, 
                 for (size_t c = 0; c < cols; c++)// for each col
                 {
                     double v = jo[layername][och][ich][r][c];
-                    weights[layernum][och](c, r, ich) = v;
+                    weights[layernum][och](r, c, ich) = v;
                 }
             }
         }
@@ -307,70 +323,142 @@ bool LoadWeights(string weightfilename, vector<vector<Array<float>>>& weights, v
 
     //features.0.weight : torch.Size([64, 3, 3, 3])
     LoadWeightsForLayer("features.0.weight", 0, 64, 3, 3, 3, weights, jo);
-
     //features.0.bias : torch.Size([64])
     LoadBiasesForLayer("features.0.bias", 0, 64, biases, jo);
-    
 
     //features.3.squeeze.weight : torch.Size([16, 64, 1, 1])
+    LoadWeightsForLayer("features.3.squeeze.weight", 1, 16, 64, 1, 1, weights, jo);
     //features.3.squeeze.bias : torch.Size([16])
+    LoadBiasesForLayer("features.3.squeeze.bias", 1, 16, biases, jo);
+
     //features.3.expand1x1.weight : torch.Size([64, 16, 1, 1])
+    LoadWeightsForLayer("features.3.expand1x1.weight", 2, 64, 16, 1, 1, weights, jo);
     //features.3.expand1x1.bias : torch.Size([64])
+    LoadBiasesForLayer("features.3.expand1x1.bias", 2, 64, biases, jo);
+
     //features.3.expand3x3.weight : torch.Size([64, 16, 3, 3])
+    LoadWeightsForLayer("features.3.expand3x3.weight", 3, 64, 16, 3, 3, weights, jo);
     //features.3.expand3x3.bias : torch.Size([64])
+    LoadBiasesForLayer("features.3.expand3x3.bias", 3, 64, biases, jo);
+
     //features.4.squeeze.weight : torch.Size([16, 128, 1, 1])
+    LoadWeightsForLayer("features.4.squeeze.weight", 4, 16, 128, 1, 1, weights, jo);
     //features.4.squeeze.bias : torch.Size([16])
+    LoadBiasesForLayer("features.4.squeeze.bias", 4, 16, biases, jo);
+
     //features.4.expand1x1.weight : torch.Size([64, 16, 1, 1])
+    LoadWeightsForLayer("features.4.expand1x1.weight", 5, 64, 16, 1, 1, weights, jo);
     //features.4.expand1x1.bias : torch.Size([64])
+    LoadBiasesForLayer("features.4.expand1x1.bias", 5, 64, biases, jo);
+
     //features.4.expand3x3.weight : torch.Size([64, 16, 3, 3])
+    LoadWeightsForLayer("features.4.expand3x3.weight", 6, 64, 16, 3, 3, weights, jo);
     //features.4.expand3x3.bias : torch.Size([64])
+    LoadBiasesForLayer("features.4.expand3x3.bias", 6, 64, biases, jo);
+
     //features.6.squeeze.weight : torch.Size([32, 128, 1, 1])
+    LoadWeightsForLayer("features.6.squeeze.weight", 7, 32, 128, 1, 1, weights, jo);
     //features.6.squeeze.bias : torch.Size([32])
+    LoadBiasesForLayer("features.6.squeeze.bias", 7, 32, biases, jo);
+
     //features.6.expand1x1.weight : torch.Size([128, 32, 1, 1])
+    LoadWeightsForLayer("features.6.expand1x1.weight", 8, 128, 32, 1, 1, weights, jo);
     //features.6.expand1x1.bias : torch.Size([128])
+    LoadBiasesForLayer("features.6.expand1x1.bias", 8, 128, biases, jo);
+
     //features.6.expand3x3.weight : torch.Size([128, 32, 3, 3])
+    LoadWeightsForLayer("features.6.expand3x3.weight", 9, 128, 32, 3, 3, weights, jo);
     //features.6.expand3x3.bias : torch.Size([128])
+    LoadBiasesForLayer("features.6.expand3x3.bias", 9, 128, biases, jo);
+
     //features.7.squeeze.weight : torch.Size([32, 256, 1, 1])
+    LoadWeightsForLayer("features.7.squeeze.weight", 10, 32, 256, 1, 1, weights, jo);
     //features.7.squeeze.bias : torch.Size([32])
+    LoadBiasesForLayer("features.7.squeeze.bias", 10, 32, biases, jo);
     //features.7.expand1x1.weight : torch.Size([128, 32, 1, 1])
+
+    LoadWeightsForLayer("features.7.expand1x1.weight", 11, 128, 32, 1, 1, weights, jo);
     //features.7.expand1x1.bias : torch.Size([128])
+    LoadBiasesForLayer("features.7.expand1x1.bias", 11, 128, biases, jo);
+
     //features.7.expand3x3.weight : torch.Size([128, 32, 3, 3])
+    LoadWeightsForLayer("features.7.expand3x3.weight", 12, 128, 32, 3, 3, weights, jo);
     //features.7.expand3x3.bias : torch.Size([128])
+    LoadBiasesForLayer("features.7.expand3x3.bias", 12, 128, biases, jo);
+
     //features.9.squeeze.weight : torch.Size([48, 256, 1, 1])
+    LoadWeightsForLayer("features.9.squeeze.weight", 13, 48, 256, 1, 1, weights, jo);
     //features.9.squeeze.bias : torch.Size([48])
+    LoadBiasesForLayer("features.9.squeeze.bias", 13, 48, biases, jo);
+
     //features.9.expand1x1.weight : torch.Size([192, 48, 1, 1])
+    LoadWeightsForLayer("features.9.expand1x1.weight", 14, 192, 48, 1, 1, weights, jo);
     //features.9.expand1x1.bias : torch.Size([192])
+    LoadBiasesForLayer("features.9.expand1x1.bias", 14, 192, biases, jo);
+
     //features.9.expand3x3.weight : torch.Size([192, 48, 3, 3])
+    LoadWeightsForLayer("features.9.expand3x3.weight", 15, 192, 48, 3, 3, weights, jo);
     //features.9.expand3x3.bias : torch.Size([192])
+    LoadBiasesForLayer("features.9.expand3x3.bias", 15, 192, biases, jo);
+
     //features.10.squeeze.weight : torch.Size([48, 384, 1, 1])
+    LoadWeightsForLayer("features.10.squeeze.weight", 16, 48, 384, 1, 1, weights, jo);
     //features.10.squeeze.bias : torch.Size([48])
+    LoadBiasesForLayer("features.10.squeeze.bias", 16, 48, biases, jo);
+
     //features.10.expand1x1.weight : torch.Size([192, 48, 1, 1])
+    LoadWeightsForLayer("features.10.expand1x1.weight", 17, 192, 48, 1, 1, weights, jo);
     //features.10.expand1x1.bias : torch.Size([192])
+    LoadBiasesForLayer("features.10.expand1x1.bias", 17, 192, biases, jo);
+
     //features.10.expand3x3.weight : torch.Size([192, 48, 3, 3])
+    LoadWeightsForLayer("features.10.expand3x3.weight", 18, 192, 48, 3, 3, weights, jo);
     //features.10.expand3x3.bias : torch.Size([192])
+    LoadBiasesForLayer("features.10.expand3x3.bias", 18, 192, biases, jo);
+
     //features.11.squeeze.weight : torch.Size([64, 384, 1, 1])
+    LoadWeightsForLayer("features.11.squeeze.weight", 19, 64, 384, 1, 1, weights, jo);
     //features.11.squeeze.bias : torch.Size([64])
+    LoadBiasesForLayer("features.11.squeeze.bias", 19, 64, biases, jo);
+
     //features.11.expand1x1.weight : torch.Size([256, 64, 1, 1])
+    LoadWeightsForLayer("features.11.expand1x1.weight", 20, 256, 64, 1, 1, weights, jo);
     //features.11.expand1x1.bias : torch.Size([256])
+    LoadBiasesForLayer("features.11.expand1x1.bias", 20, 256, biases, jo);
+
     //features.11.expand3x3.weight : torch.Size([256, 64, 3, 3])
+    LoadWeightsForLayer("features.11.expand3x3.weight", 21, 256, 64, 3, 3, weights, jo);
     //features.11.expand3x3.bias : torch.Size([256])
+    LoadBiasesForLayer("features.11.expand3x3.bias", 21, 256, biases, jo);
+
     //features.12.squeeze.weight : torch.Size([64, 512, 1, 1])
+    LoadWeightsForLayer("features.12.squeeze.weight", 22, 64, 512, 1, 1, weights, jo);
     //features.12.squeeze.bias : torch.Size([64])
+    LoadBiasesForLayer("features.12.squeeze.bias", 22, 64, biases, jo);
+
     //features.12.expand1x1.weight : torch.Size([256, 64, 1, 1])
+    LoadWeightsForLayer("features.12.expand1x1.weight", 23, 256, 64, 1, 1, weights, jo);
     //features.12.expand1x1.bias : torch.Size([256])
+    LoadBiasesForLayer("features.12.expand1x1.bias", 23, 256, biases, jo);
+
     //features.12.expand3x3.weight : torch.Size([256, 64, 3, 3])
+    LoadWeightsForLayer("features.12.expand3x3.weight", 24, 256, 64, 3, 3, weights, jo);
     //features.12.expand3x3.bias : torch.Size([256])
+    LoadBiasesForLayer("features.12.expand3x3.bias", 24, 256, biases, jo);
+
     //classifier.1.weight : torch.Size([3, 512, 1, 1])
+    LoadWeightsForLayer("classifier.1.weight", 25, 3, 512, 1, 1, weights, jo);
     //classifier.1.bias : torch.Size([3])
+    LoadBiasesForLayer("classifier.1.bias", 25, 3, biases, jo);
 
     return false;
 }
 
 void main()
 {
-    Mat image = imread("dog.jpg");
-    int down_width = 112;
-    int down_height = 112;
+    Mat image = imread("F:/graduation_project/CUDA/bump.jpg");
+    int down_width = 224;
+    int down_height = 224;
 
     //Mat nnew_image;
     Mat different_Channels[3];
@@ -388,24 +476,41 @@ void main()
     //waitKey(0);
     
     r_image.convertTo(r_image, CV_32F);
+    r_image = r_image.t();
     std::vector<float> r_vec((float*)r_image.data, (float*)r_image.data + r_image.rows * r_image.cols);
     
     Mat g_image;
     resize(g, g_image, Size(down_width, down_height), INTER_LINEAR);
     g_image.convertTo(g_image, CV_32F);
+    g_image = g_image.t();
     std::vector<float> g_vec((float*)g_image.data, (float*)g_image.data + g_image.rows * g_image.cols);
     
     Mat b_image;
     resize(b, b_image, Size(down_width, down_height), INTER_LINEAR);
     b_image.convertTo(b_image, CV_32F);
+    b_image = b_image.t();
     std::vector<float> b_vec((float*)b_image.data, (float*)b_image.data + b_image.rows * b_image.cols);
     
+    //means: [0.485, 0.456, 0.406]
+    //stdevs : [0.229, 0.224, 0.225]
+    for (float& x_ : r_vec) 
+    {
+        x_ = ((x_/255) - 0.485) / 0.229;
+    }
+    for (float& x_ : g_vec)
+    {
+        x_ = ((x_ / 255) - 0.456) / 0.224;
+    }
+    for (float& x_ : b_vec)
+    {
+        x_ = ((x_ / 255) - 0.406) / 0.225;
+    }
     vector<float> image_vec;
-    image_vec = b_vec;
+    image_vec = r_vec;
     image_vec.insert(image_vec.end(), g_vec.begin(), g_vec.end());
-    image_vec.insert(image_vec.end(), r_vec.begin(), r_vec.end());
+    image_vec.insert(image_vec.end(), b_vec.begin(), b_vec.end());
     
-    vector<int> dim_img({ 112,112,3 });
+    vector<int> dim_img({ down_height,down_width,3 });
     Array<float> img(dim_img);
     img.fill_data(image_vec);
 
@@ -420,6 +525,7 @@ void main()
         weights.push_back(-1.0);
         weights.push_back(-1.0);
         weights.push_back(-1.0);
+
         weights.push_back(1.0);
         weights.push_back(1.0);
         weights.push_back(1.0);
@@ -429,6 +535,7 @@ void main()
         weights.push_back(-1.0);
         weights.push_back(-1.0);
         weights.push_back(-1.0);
+        
         weights.push_back(1.0);
         weights.push_back(1.0);
         weights.push_back(1.0);
@@ -440,22 +547,84 @@ void main()
         weights.push_back(-1.0); 
     }
 
+    vector<float> input;//3*3*3
+    {
+        input.push_back(1.0);
+        input.push_back(2.0);
+        input.push_back(3.0);
+        input.push_back(4.0);
+        input.push_back(5.0);
+        input.push_back(6.0);
+        input.push_back(7.0);
+        input.push_back(8.0);
+        input.push_back(9.0);
+        
+        input.push_back(1.0);
+        input.push_back(2.0);
+        input.push_back(3.0);
+        input.push_back(4.0);
+        input.push_back(5.0);
+        input.push_back(6.0);
+        input.push_back(7.0);
+        input.push_back(8.0);
+        input.push_back(9.0);
+        
+        input.push_back(1.0);
+        input.push_back(2.0);
+        input.push_back(3.0);
+        input.push_back(4.0);
+        input.push_back(5.0);
+        input.push_back(6.0);
+        input.push_back(7.0);
+        input.push_back(8.0);
+        input.push_back(9.0);
+    }
+    vector<float> vv_input= input;
+    vv_input.insert(vv_input.end(), input.begin(), input.end());
+    vv_input.insert(vv_input.end(), input.begin(), input.end());
+
+    vector<float> vvv_input = vv_input;
+    vvv_input.insert(vvv_input.end(), vv_input.begin(), vv_input.end());
+    vvv_input.insert(vvv_input.end(), vv_input.begin(), vv_input.end());
+
+    int in = 0;
+    for (int i = 0; i < 9; i++)
+    {
+        for (int j = 0; j < 9; j++)
+        {
+            cout << vv_input[in] << " ";
+            in++;
+        }
+        cout << endl;
+    }
     vector<int> dim({ 3,3,3 });
     Array<float> w(dim);
 
+    vector<int> dim_in({ 9,9,3 });
+    Array<float> v_in(dim_in);
+
+    v_in.fill_data(vvv_input);
     w.fill_data(weights);
-    vector<Array<float>> ww;
+    vector<Array<float>> wei;
+    wei.push_back(w);
+    Array<float> biass({ 3 });
+    biass.fill_data({ 1,1,1 });
+    Convolution conv1 = Convolution(9, 9, 3, 3, 3, 3);
+    conv1.load_parameters(wei);
+    //Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_in, biass, { 1,1 }, 0, false, 3);
+
+    /*vector<Array<float>> ww;
     ww.push_back(w);
     ww.push_back(w);
-    ww.push_back(w);
+    ww.push_back(w);*/
 
     vector<vector<Array<float>>> www;
+    /*www.push_back(ww);
     www.push_back(ww);
-    www.push_back(ww);
-    www.push_back(ww);
+    www.push_back(ww);*/
     vector<Array<float>> bias;
 
-    LoadWeights("D:/Uni/Senior-2/GP2/Repos/Hawkeye/CUDA/layer/outmodel.json", www, bias);
+    LoadWeights("F:/graduation_project/CUDA/layer/outmodel.json", www, bias);
 
     SqueezeNetV1_1(img, www, bias, 3);
 

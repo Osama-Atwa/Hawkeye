@@ -147,6 +147,7 @@
     <ClInclude Include="Array.h" />
     <ClInclude Include="Avgpool.h" />
     <ClInclude Include="Convolution.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="Maxpool.h" />
   </ItemGroup>

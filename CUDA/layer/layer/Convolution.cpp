@@ -172,7 +172,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 		{
 			for (int c = 0; c < numcols; c++)
 			{
-				row_.push_back(_input(c, r, i));
+				row_.push_back(_input(r, c, i));
 			}
 			channel.push_back(row_);
 			row_.clear();
@@ -196,7 +196,8 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 	
 	this->set_input_height(new_h);
 	this->set_input_width(new_w);
-
+	int old_numcols = numcols;
+	int old_numrows = numrows;
 	numcols = new_w;
 	numrows = new_h;
 
@@ -236,7 +237,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 							{
 								int x = weights(i, j, d);
 							}*/
-							window[index] = v_input(j, i, d);
+							window[index] = v_input(i, j, d);
 							index++;
 						}
 					}
@@ -247,7 +248,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 							//cout << i << " " << j << " " << d << endl;
 							int x = i * window_w + j;
 							//cout << x << " "<< window[x]<<" "<< weights(i, j, d)<<" " <<res[x]<< endl;
-							res[x] = window[x] * weights[filter_index](j, i, d);
+							res[x] = window[x] * weights[filter_index](i, j, d);
 						}
 					}
 					v = accumulate(res.begin(), res.end(), 0.0);
@@ -280,7 +281,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 
 		first_time = true;
 
-		for (float& x_ : V_out) // if you want to add 10 to each element
+		for (float& x_ : V_out) 
 		{
 			x_ += bias(filter_index);
 			//relu
@@ -303,9 +304,11 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 	}
 
 
-	int output_h = ((numrows - window_h + 2 * p_bits) / strid[0]) + 1;
-	int output_w = ((numcols - window_w + 2 * p_bits) / strid[1]) + 1;
+	int output_h = ((old_numrows - window_h + 2 * p_bits) / strid[0]) + 1;
+	int output_w = ((old_numcols - window_w + 2 * p_bits) / strid[1]) + 1;
 	vector<int> dim_img({ output_h,output_w,(int)weights.size() });
+
+	
 	Array<float> output(dim_img);
 	output.fill_data(result);
 	return output;
