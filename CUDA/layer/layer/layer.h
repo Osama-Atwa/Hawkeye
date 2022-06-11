@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <arrayfire.h>
 #include <numeric>
 #include <cstdlib>
 #include"Array.h"
 #include <algorithm>
 
-using namespace af;
 using namespace std;
 using std::vector;
 

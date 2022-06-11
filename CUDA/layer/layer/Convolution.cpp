@@ -51,101 +51,6 @@ vector<float> Convolution::Flatten(vector<vector<float>> v)
 	}
 	return res;
 }
-af::array my_convolve2_unwrap(const af::array & signal, const af::array & filter,
-	const dim4& stride, const dim4& padding,
-	const dim4& dilation) {
-	dim4 sDims = signal.dims();
-	dim4 fDims = filter.dims();
-
-	dim_t outputWidth =
-		1 + (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
-		stride[0];
-	dim_t outputHeight =
-		1 + (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
-		stride[1];
-
-	const bool retCols = false;
-	af::array unwrapped =
-		unwrap(signal, fDims[0], fDims[1], stride[0], stride[1], padding[0],
-			padding[1], retCols);
-
-	print("unwrapped", unwrapped);
-	unwrapped = reorder(unwrapped, 1, 2, 0, 3);
-	print("unwrapped reorder", unwrapped);
-	dim4 uDims = unwrapped.dims();
-	unwrapped =
-		moddims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
-	print("unwrapped moddims", unwrapped);
-
-	af::array collapsedFilter = flip(filter, 0);
-	collapsedFilter = flip(collapsedFilter, 1);
-	print("collapsedFilter", collapsedFilter);
-
-	collapsedFilter = moddims(collapsedFilter,
-		dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
-	print("collapsedFilter moddims", collapsedFilter);
-
-	af::array res =
-		matmul(unwrapped, collapsedFilter, AF_MAT_TRANS, AF_MAT_NONE);
-	print("res", res);
-
-	cout << "res moddims new dims " << outputWidth << " " << outputHeight << " " << sDims[3] << " " << fDims[3] << endl;
-
-	res = moddims(res, dim4(outputWidth, outputHeight, sDims[3], fDims[3]));
-	print("res moddims", res);
-	af::array out = reorder(res, 0, 1, 3, 2);
-	print("out", out);
-
-	return out;
-}
-
-af::array myconvolve2NN(
-	const af::array& signal, const af::array& filter,
-	const dim4 stride,      // NOLINT(performance-unnecessary-value-param)
-	const dim4 padding,     // NOLINT(performance-unnecessary-value-param)
-	const dim4 dilation) {  // NOLINT(performance-unnecessary-value-param)
-	af_array out = 0;
-	af_convolve2_nn(&out, signal.get(), filter.get(), 2, stride.get(),
-		2, padding.get(), 2, dilation.get());
-	return af::array(out);
-}
-
-void Convolution::execute(Array<float>& v_input,Array<float>& v_output) {
-	int n_f = get_no_filters();
-	int f_w = get_filters_w();
-	int f_h = get_filters_h();
-
-	int i_w = get_input_width();
-	int i_h = get_input_height();
-	int i_ch = get_input_channels();
-
-	af::dim4 s (get_stride(), get_stride());
-	af::dim4 p (get_padding(), get_padding(), 1, 1);
-	af::dim4 dil (1, 1,0,0);
-	//std::cout << s << p << endl;
-	const af::array af_v_input = af::array( i_w, i_h, 1, i_ch, v_input.get_data().data());
-	const af::array af_weights = af::array(f_w,f_h, 1, n_f, this->weights[0].get_data().data());
-	//cout << "stride " << s[0] << " " << s[1] << " " << s[2] << " " << s[3] << endl;
-
-	//cout << "padding " << p[0] << " " << p[1] << " " << p[2] << " " << p[3] << endl;
-
-
-	//cout << "dilation " << dil[0] << " " << dil[1] << " " << dil[2] << " " << dil[3] << endl;
-
-	//af::array af_v_output = my_convolve2_unwrap(af_v_input, af_weights,s,p,dil);
-	//af::array af_v_output = convolve2NN(af_v_input, af_weights,s,p,dil);
-	af::array af_v_output = convolve2NN(af_v_input, af_weights,s,p,dil);
-
-	//af::print("input", af_v_input);
-	//af::print("weights", af_weights);
-	//af::print("output", af_v_output);
-
-	int arrlen = af_v_output.elements();
-	float* dbl_ptr = af_v_output.host<float>();
-
-	v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
-	//v_output = values;
-}
 
 
 vector<vector<float>> Convolution::HM_excute(vector<vector<float>> v_input, int strid)
@@ -247,7 +152,7 @@ vector<float> Convolution::convert_2d_2_1d(vector<vector<float>>v)
 	return output;
 }
 
-Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float> baias, vector<int> strid, int p_bits, bool zero, int DEPTH)
+Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float> bias, vector<int> strid, int p_bits, bool zero, int DEPTH)
 {
 
 	
@@ -312,8 +217,8 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 	vector<float> V_out;
 	vector<float> result;
 
-	bool first_time = TRUE;
-	bool first_time_res = TRUE;
+	bool first_time = true;
+	bool first_time_res = true;
 
 	for (int filter_index = 0; filter_index < weights.size(); filter_index++)
 	{
@@ -358,35 +263,37 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float
 				}
 			}
 			//vector<float> vector2 = Convolution::Flatten(v_output);
-			for (float& x_ : c_output) // if you want to add 10 to each element
-			{
-				x_ += baias(filter_index, d);
-				if (x_ < 0)
-				{
-					x_ = 0;
-				}
-			}
-
+			
 			if (first_time)
 			{
 				V_out = c_output;
-				first_time = FALSE;
+				first_time = false;
 			}
 			else
 			{
 				std::transform(V_out.begin(), V_out.end(), c_output.begin(), V_out.begin(), std::plus<float>());
 			}
-			
+
 			c_output.clear();
 			
 		}
 
-		first_time = TRUE;
-		
+		first_time = true;
+
+		for (float& x_ : V_out) // if you want to add 10 to each element
+		{
+			x_ += bias(filter_index);
+			//relu
+			if (x_ < 0)
+			{
+				x_ = 0;
+			}
+		}
+
 		if (first_time_res)
 		{
 			result = V_out;
-			first_time_res = FALSE;
+			first_time_res = false;
 		}
 		else
 		{

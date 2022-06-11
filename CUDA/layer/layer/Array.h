@@ -21,20 +21,21 @@ public:
     Array(T** arr, int dim0, int dim1);
     Array(T*** arr, int dim0, int dim1, int dim2);
     Array(T**** arr, int dim0, int dim1, int dim2, int dim3);
-    T operator()(int i0, int i1 = -1, int i2 = -1, int i3 = -1);
+    T& operator()(int i0, int i1 = -1, int i2 = -1, int i3 = -1);
 };
 
 template<typename T> Array<T>::Array() {};
 template<typename T> Array<T>::Array(vector<int> dimemsions)
 {
     dim = dimemsions;
-    int nelem = 0;
+    int nelem = 1;
     for (size_t i = 0; i < dimemsions.size(); i++)
     {
-        nelem += dimemsions[i];
+        nelem *= dimemsions[i];
     }
     data.resize(nelem);
 }
+
 template<typename T> void Array<T>::set_dim(vector<int> v)
 {
     dim = v;
@@ -89,7 +90,7 @@ template<typename T> Array<T>::Array(T**** arr, int dim0, int dim1, int dim2, in
     }
 }
 
-template<typename T> T Array<T>::operator()(int i0, int i1, int i2, int i3)
+template<typename T> T& Array<T>::operator()(int i0, int i1, int i2, int i3)
 {
     if (i1 == -1)
         return data[i0];

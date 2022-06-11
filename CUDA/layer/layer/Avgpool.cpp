@@ -152,17 +152,6 @@ vector<vector<float>> Avgpool::vector_padding(vector<vector<float>> v, int p_bit
 	return result;
 }
 
-af::array Avgpool::af_mean_filter(af::array v_input, int osz, int wsz, int stride, int padding)
-{
-	af::array unwrapped = af::unwrap(v_input, wsz, wsz, stride, stride, padding, padding);
-	af::array flattened = af::mean(unwrapped, 0);
-	af::print("avgpool flattened", flattened);
-	af::array res = af::wrap(flattened, osz, osz, 1, 1, 1, 1, 0, 0);
-
-	af::print("avgpool res", flattened);
-	return res;
-}
-
 Array<float> Avgpool::HM_execute(Array<float> v_input, int s, int DEPTH)
 {
 	int  numcols = get_input_width();
@@ -230,32 +219,32 @@ void Avgpool::load_parameters(Array<float>& V)
 }
 void Avgpool::execute(Array<float>& v_input,Array<float>& v_output)
 {
-	int n_f = get_input_channels();
-	int f_w = get_window_size();
-	int f_h = get_window_size();
+	//int n_f = get_input_channels();
+	//int f_w = get_window_size();
+	//int f_h = get_window_size();
 
-	int i_w = get_input_width();
-	int i_h = get_input_height();
-	int i_ch = get_input_channels();
+	//int i_w = get_input_width();
+	//int i_h = get_input_height();
+	//int i_ch = get_input_channels();
 
-	int osz = (i_w - f_w + 2 * get_padding()) / get_stride() + 1;
-	int o_ch = n_f;
+	//int osz = (i_w - f_w + 2 * get_padding()) / get_stride() + 1;
+	//int o_ch = n_f;
 
-	const af::array af_v_input = af::array(i_w, i_h, 1, i_ch, v_input.get_data().data());
-	//const af::array af_weights = af::array(f_w, f_h, 1, n_f, this->weights.data());
-	
-	//af::array af_v_output = af::mean(af_v_input, af_weights);
-	af::array af_v_output(osz, osz, o_ch);
-	for (int i = 0; i < o_ch; i++)
-	{
-		af_v_output(span, span, i) = af_mean_filter(af_v_input(span, span, i), osz, f_w, get_stride(), get_padding());
-	}
-	//af::array af_v_output = af_mean_filter(af_v_input, osz, f_w, get_stride(), get_padding());
-	
-	af::print("input", af_v_input);
-	af::print("output", af_v_output);
+	//const af::array af_v_input = af::array(i_w, i_h, 1, i_ch, v_input.get_data().data());
+	////const af::array af_weights = af::array(f_w, f_h, 1, n_f, this->weights.data());
+	//
+	////af::array af_v_output = af::mean(af_v_input, af_weights);
+	//af::array af_v_output(osz, osz, o_ch);
+	//for (int i = 0; i < o_ch; i++)
+	//{
+	//	af_v_output(span, span, i) = af_mean_filter(af_v_input(span, span, i), osz, f_w, get_stride(), get_padding());
+	//}
+	////af::array af_v_output = af_mean_filter(af_v_input, osz, f_w, get_stride(), get_padding());
+	//
+	//af::print("input", af_v_input);
+	//af::print("output", af_v_output);
 
-	int arrlen = af_v_output.elements();
-	float* dbl_ptr = af_v_output.host<float>();
-	v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
+	//int arrlen = af_v_output.elements();
+	//float* dbl_ptr = af_v_output.host<float>();
+	//v_output.fill_data(vector<float>(dbl_ptr, dbl_ptr + arrlen));
 }

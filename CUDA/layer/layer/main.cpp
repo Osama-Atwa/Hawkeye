@@ -6,6 +6,8 @@
 #include "Maxpool.h";
 #include <opencv2/opencv.hpp>
 #include <fstream>
+#include "json.hpp"
+#include <chrono>
 using namespace cv;
 using namespace std;
 
@@ -62,7 +64,7 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     Convolution conv2d_1 = Convolution(i_h, i_w, i_depth, 1, 1, i_depth);
     conv2d_1.load_parameters(weights[0]);
-    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, bias[0], {1, 1}, 1, TRUE, i_depth);
+    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, bias[0], {1, 1}, 1, true, i_depth);
 
     int s_h = squeeze.get_dim()[0];
     int s_w = squeeze.get_dim()[1];
@@ -70,11 +72,11 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     Convolution conv2d_2 = Convolution(s_h, s_w, s_depth, 1, 1, s_depth);
     conv2d_2.load_parameters(weights[1]);
-    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, bias[1], { 1, 1 }, 1, TRUE, s_depth);
+    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, bias[1], { 1, 1 }, 1, true, s_depth);
 
     Convolution conv2d_3 = Convolution(s_h, s_w, s_depth, 3, 3, s_depth);
     conv2d_3.load_parameters(weights[2]);
-    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, bias[2], { 1, 1 }, 1, TRUE, squeeze.get_dim()[2]);
+    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, bias[2], { 1, 1 }, 1, true, squeeze.get_dim()[2]);
     
     int x_h = expand1.get_dim()[0];
     int x_w = expand1.get_dim()[1];
@@ -94,6 +96,7 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     return result;
 }
+
 Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights, vector<Array<float>> bias ,int nb_classes)
 {
     int i_h = v_input.get_dim()[0];
@@ -101,7 +104,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     int i_depth = v_input.get_dim()[2];
     Convolution conv1 = Convolution(i_h, i_w, i_depth, 3, 3, i_depth);
     conv1.load_parameters(weights[0]);
-    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_input, bias[0], { 2,2 }, 0, FALSE, i_depth);
+    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_input, bias[0], { 2,2 }, 0, false, i_depth);
 
     int c1_h = conv1_out.get_dim()[0];
     int c1_w = conv1_out.get_dim()[1];
@@ -206,7 +209,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     int f8_depth = Fire8.get_dim()[2];
     Convolution conv2 = Convolution(f8_h, f8_w, f8_depth, 1, 1, f8_depth);
     conv2.load_parameters(weights[25]);
-    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, bias[25], { 1,1 }, 1, FALSE, f8_depth);
+    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, bias[25], { 1,1 }, 1, false, f8_depth);
 
     int c2_h = conv2_out.get_dim()[0];
     int c2_w = conv2_out.get_dim()[1];
@@ -216,7 +219,155 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
     return av1_out;
 }
 
-void main() {
+void LoadWeightsForLayer(string layername, int layernum, int out_ch, int in_ch, int rows, int cols, vector<vector<Array<float>>>& weights, nlohmann::json& jo)
+{
+    using namespace std::chrono;
+    auto start = high_resolution_clock::now();
+    weights[layernum].clear();
+    weights[layernum].resize(out_ch);
+    for (size_t i = 0; i < out_ch; i++)
+    {
+        weights[layernum][i] = Array<float>({ cols, rows, in_ch });
+    }
+
+    for (size_t och = 0; och < out_ch; och++) // for each output channel
+    {
+        for (size_t ich = 0; ich < in_ch; ich++) // for each input channel
+        {
+            for (size_t r = 0; r < rows; r++)// for each row
+            {
+                for (size_t c = 0; c < cols; c++)// for each col
+                {
+                    double v = jo[layername][och][ich][r][c];
+                    weights[layernum][och](c, r, ich) = v;
+                }
+            }
+        }
+    }
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start);
+
+    cout << "layer " << layernum << " weight fill time in milliseconds:" << duration.count() << endl;
+
+}
+
+void LoadBiasesForLayer(string layername, int layernum, int out_ch, vector<Array<float>>& biases, nlohmann::json& jo)
+{
+    using namespace std::chrono;
+    auto start = high_resolution_clock::now();
+    biases[layernum] = Array<float>({ out_ch });
+
+    for (size_t och = 0; och < out_ch; och++) // for each output channel
+    {
+        double v = jo[layername][och];
+        biases[layernum](och) = v;
+    }
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start);
+
+    cout << "layer " << layernum << " bias fill time in milliseconds:" << duration.count() << endl;
+}
+
+bool LoadWeights(string weightfilename, vector<vector<Array<float>>>& weights, vector<Array<float>>& biases)
+{
+    std::ifstream t(weightfilename);
+    assert(!!t);
+    t.seekg(0, std::ios::end);
+    size_t size = t.tellg();
+    std::string buffer(size, ' ');
+    t.seekg(0);
+    t.read(&buffer[0], size);
+
+    //vector<vector<Array<float>>>& weights
+    //layers outch  colxrowxinch
+    //dims: out_ch, in_ch, rows, cols
+
+
+    using json = nlohmann::json;
+
+    using namespace std::chrono;
+
+    // Use auto keyword to avoid typing long
+    // type definitions to get the timepoint
+    // at this instant use function now()
+    auto start = high_resolution_clock::now();
+
+    auto jo = json::parse(buffer);
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(end - start);
+
+    cout << "json parse time in seconds:" << duration.count() << endl;
+
+    weights.clear();
+    weights.resize(26);
+
+    biases.clear();
+    biases.resize(26);
+
+
+    //features.0.weight : torch.Size([64, 3, 3, 3])
+    LoadWeightsForLayer("features.0.weight", 0, 64, 3, 3, 3, weights, jo);
+
+    //features.0.bias : torch.Size([64])
+    LoadBiasesForLayer("features.0.bias", 0, 64, biases, jo);
+    
+
+    //features.3.squeeze.weight : torch.Size([16, 64, 1, 1])
+    //features.3.squeeze.bias : torch.Size([16])
+    //features.3.expand1x1.weight : torch.Size([64, 16, 1, 1])
+    //features.3.expand1x1.bias : torch.Size([64])
+    //features.3.expand3x3.weight : torch.Size([64, 16, 3, 3])
+    //features.3.expand3x3.bias : torch.Size([64])
+    //features.4.squeeze.weight : torch.Size([16, 128, 1, 1])
+    //features.4.squeeze.bias : torch.Size([16])
+    //features.4.expand1x1.weight : torch.Size([64, 16, 1, 1])
+    //features.4.expand1x1.bias : torch.Size([64])
+    //features.4.expand3x3.weight : torch.Size([64, 16, 3, 3])
+    //features.4.expand3x3.bias : torch.Size([64])
+    //features.6.squeeze.weight : torch.Size([32, 128, 1, 1])
+    //features.6.squeeze.bias : torch.Size([32])
+    //features.6.expand1x1.weight : torch.Size([128, 32, 1, 1])
+    //features.6.expand1x1.bias : torch.Size([128])
+    //features.6.expand3x3.weight : torch.Size([128, 32, 3, 3])
+    //features.6.expand3x3.bias : torch.Size([128])
+    //features.7.squeeze.weight : torch.Size([32, 256, 1, 1])
+    //features.7.squeeze.bias : torch.Size([32])
+    //features.7.expand1x1.weight : torch.Size([128, 32, 1, 1])
+    //features.7.expand1x1.bias : torch.Size([128])
+    //features.7.expand3x3.weight : torch.Size([128, 32, 3, 3])
+    //features.7.expand3x3.bias : torch.Size([128])
+    //features.9.squeeze.weight : torch.Size([48, 256, 1, 1])
+    //features.9.squeeze.bias : torch.Size([48])
+    //features.9.expand1x1.weight : torch.Size([192, 48, 1, 1])
+    //features.9.expand1x1.bias : torch.Size([192])
+    //features.9.expand3x3.weight : torch.Size([192, 48, 3, 3])
+    //features.9.expand3x3.bias : torch.Size([192])
+    //features.10.squeeze.weight : torch.Size([48, 384, 1, 1])
+    //features.10.squeeze.bias : torch.Size([48])
+    //features.10.expand1x1.weight : torch.Size([192, 48, 1, 1])
+    //features.10.expand1x1.bias : torch.Size([192])
+    //features.10.expand3x3.weight : torch.Size([192, 48, 3, 3])
+    //features.10.expand3x3.bias : torch.Size([192])
+    //features.11.squeeze.weight : torch.Size([64, 384, 1, 1])
+    //features.11.squeeze.bias : torch.Size([64])
+    //features.11.expand1x1.weight : torch.Size([256, 64, 1, 1])
+    //features.11.expand1x1.bias : torch.Size([256])
+    //features.11.expand3x3.weight : torch.Size([256, 64, 3, 3])
+    //features.11.expand3x3.bias : torch.Size([256])
+    //features.12.squeeze.weight : torch.Size([64, 512, 1, 1])
+    //features.12.squeeze.bias : torch.Size([64])
+    //features.12.expand1x1.weight : torch.Size([256, 64, 1, 1])
+    //features.12.expand1x1.bias : torch.Size([256])
+    //features.12.expand3x3.weight : torch.Size([256, 64, 3, 3])
+    //features.12.expand3x3.bias : torch.Size([256])
+    //classifier.1.weight : torch.Size([3, 512, 1, 1])
+    //classifier.1.bias : torch.Size([3])
+
+    return false;
+}
+
+void main()
+{
     Mat image = imread("dog.jpg");
     int down_width = 112;
     int down_height = 112;
@@ -303,6 +454,8 @@ void main() {
     www.push_back(ww);
     www.push_back(ww);
     vector<Array<float>> bias;
+
+    LoadWeights("D:/Uni/Senior-2/GP2/Repos/Hawkeye/CUDA/layer/outmodel.json", www, bias);
 
     SqueezeNetV1_1(img, www, bias, 3);
 
