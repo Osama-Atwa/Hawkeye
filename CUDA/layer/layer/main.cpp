@@ -5,6 +5,7 @@
 #include "Avgpool.h";
 #include "Maxpool.h";
 #include <opencv2/opencv.hpp>
+#include <fstream>
 using namespace cv;
 using namespace std;
 
@@ -53,7 +54,7 @@ uint8_t** setupHMM(vector<vector<float> >& vals, int N, int M)
     }
     return temp;
 }
-Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights)
+Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights, vector<Array<float>> bias)
 {
     int i_h = input.get_dim()[0];
     int i_w = input.get_dim()[1];
@@ -61,7 +62,7 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     Convolution conv2d_1 = Convolution(i_h, i_w, i_depth, 1, 1, i_depth);
     conv2d_1.load_parameters(weights[0]);
-    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, {1, 1}, 1, TRUE, i_depth);
+    Array<float> squeeze = conv2d_1.HM_excute_Array_Depth(input, bias[0], {1, 1}, 1, TRUE, i_depth);
 
     int s_h = squeeze.get_dim()[0];
     int s_w = squeeze.get_dim()[1];
@@ -69,11 +70,11 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     Convolution conv2d_2 = Convolution(s_h, s_w, s_depth, 1, 1, s_depth);
     conv2d_2.load_parameters(weights[1]);
-    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, { 1, 1 }, 1, TRUE, s_depth);
+    Array<float> expand1 = conv2d_2.HM_excute_Array_Depth(squeeze, bias[1], { 1, 1 }, 1, TRUE, s_depth);
 
     Convolution conv2d_3 = Convolution(s_h, s_w, s_depth, 3, 3, s_depth);
     conv2d_3.load_parameters(weights[2]);
-    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, { 1, 1 }, 1, TRUE, squeeze.get_dim()[2]);
+    Array<float> expand2 = conv2d_3.HM_excute_Array_Depth(squeeze, bias[2], { 1, 1 }, 1, TRUE, squeeze.get_dim()[2]);
     
     int x_h = expand1.get_dim()[0];
     int x_w = expand1.get_dim()[1];
@@ -93,14 +94,14 @@ Array<float> FireModule(Array<float> input, vector<vector<Array<float>>> weights
 
     return result;
 }
-void SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights ,int nb_classes)
+Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights, vector<Array<float>> bias ,int nb_classes)
 {
     int i_h = v_input.get_dim()[0];
     int i_w = v_input.get_dim()[1];
     int i_depth = v_input.get_dim()[2];
     Convolution conv1 = Convolution(i_h, i_w, i_depth, 3, 3, i_depth);
     conv1.load_parameters(weights[0]);
-    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_input, { 2,2 }, 0, FALSE, i_depth);
+    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_input, bias[0], { 2,2 }, 0, FALSE, i_depth);
 
     int c1_h = conv1_out.get_dim()[0];
     int c1_w = conv1_out.get_dim()[1];
@@ -112,13 +113,21 @@ void SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights ,i
     fire1_weights.push_back(weights[1]);
     fire1_weights.push_back(weights[2]);
     fire1_weights.push_back(weights[3]);
-    Array<float> Fire1 = FireModule(max1_out, fire1_weights);
+    vector<Array<float>> f1_bias;
+    f1_bias.push_back(bias[1]);
+    f1_bias.push_back(bias[2]);
+    f1_bias.push_back(bias[3]);
+    Array<float> Fire1 = FireModule(max1_out, fire1_weights, f1_bias);
 
     vector<vector<Array<float>>> fire2_weights;
     fire2_weights.push_back(weights[4]);
     fire2_weights.push_back(weights[5]);
     fire2_weights.push_back(weights[6]);
-    Array<float> Fire2 = FireModule(Fire1, fire2_weights);
+    vector<Array<float>> f2_bias;
+    f2_bias.push_back(bias[4]);
+    f2_bias.push_back(bias[5]);
+    f2_bias.push_back(bias[6]);
+    Array<float> Fire2 = FireModule(Fire1, fire2_weights, f2_bias);
 
     int f2_h = Fire2.get_dim()[0];
     int f2_w = Fire2.get_dim()[1];
@@ -130,13 +139,21 @@ void SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights ,i
     fire3_weights.push_back(weights[7]);
     fire3_weights.push_back(weights[8]);
     fire3_weights.push_back(weights[9]);
-    Array<float> Fire3 = FireModule(max2_out, fire3_weights);
+    vector<Array<float>> f3_bias;
+    f3_bias.push_back(bias[7]);
+    f3_bias.push_back(bias[8]);
+    f3_bias.push_back(bias[9]);
+    Array<float> Fire3 = FireModule(max2_out, fire3_weights, f3_bias);
 
     vector<vector<Array<float>>> fire4_weights;
     fire4_weights.push_back(weights[10]);
     fire4_weights.push_back(weights[11]);
     fire4_weights.push_back(weights[12]);
-    Array<float> Fire4 = FireModule(Fire3, fire4_weights);
+    vector<Array<float>> f4_bias;
+    f4_bias.push_back(bias[10]);
+    f4_bias.push_back(bias[11]);
+    f4_bias.push_back(bias[12]);
+    Array<float> Fire4 = FireModule(Fire3, fire4_weights,f4_bias);
 
     int f4_h = Fire4.get_dim()[0];
     int f4_w = Fire4.get_dim()[1];
@@ -148,33 +165,55 @@ void SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> weights ,i
     fire5_weights.push_back(weights[13]);
     fire5_weights.push_back(weights[14]);
     fire5_weights.push_back(weights[15]);
-    Array<float> Fire5 = FireModule(max3_out, fire5_weights);
+    vector<Array<float>> f5_bias;
+    f5_bias.push_back(bias[13]);
+    f5_bias.push_back(bias[14]);
+    f5_bias.push_back(bias[15]);
+    Array<float> Fire5 = FireModule(max3_out, fire5_weights, f5_bias);
 
     vector<vector<Array<float>>> fire6_weights;
     fire6_weights.push_back(weights[16]);
     fire6_weights.push_back(weights[17]);
     fire6_weights.push_back(weights[18]);
-    Array<float> Fire6 = FireModule(Fire5, fire6_weights);
+    vector<Array<float>> f6_bias;
+    f6_bias.push_back(bias[16]);
+    f6_bias.push_back(bias[17]);
+    f6_bias.push_back(bias[18]);
+    Array<float> Fire6 = FireModule(Fire5, fire6_weights, f6_bias);
 
     vector<vector<Array<float>>> fire7_weights;
     fire7_weights.push_back(weights[19]);
     fire7_weights.push_back(weights[20]);
     fire7_weights.push_back(weights[21]);
-    Array<float> Fire7 = FireModule(Fire6, fire7_weights);
+    vector<Array<float>> f7_bias;
+    f7_bias.push_back(bias[19]);
+    f7_bias.push_back(bias[20]);
+    f7_bias.push_back(bias[21]);
+    Array<float> Fire7 = FireModule(Fire6, fire7_weights, f7_bias);
 
     vector<vector<Array<float>>> fire8_weights;
     fire8_weights.push_back(weights[22]);
     fire8_weights.push_back(weights[23]);
     fire8_weights.push_back(weights[24]);
-    Array<float> Fire8 = FireModule(Fire7, fire8_weights);
+    vector<Array<float>> f8_bias;
+    f8_bias.push_back(bias[22]);
+    f8_bias.push_back(bias[23]);
+    f8_bias.push_back(bias[24]);
+    Array<float> Fire8 = FireModule(Fire7, fire8_weights, f8_bias);
 
     int f8_h = Fire8.get_dim()[0];
     int f8_w = Fire8.get_dim()[1];
     int f8_depth = Fire8.get_dim()[2];
     Convolution conv2 = Convolution(f8_h, f8_w, f8_depth, 1, 1, f8_depth);
     conv2.load_parameters(weights[25]);
-    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, { 1,1 }, 1, FALSE, f8_depth);
+    Array<float> conv2_out = conv2.HM_excute_Array_Depth(Fire8, bias[25], { 1,1 }, 1, FALSE, f8_depth);
 
+    int c2_h = conv2_out.get_dim()[0];
+    int c2_w = conv2_out.get_dim()[1];
+    int c2_d = conv2_out.get_dim()[2];
+    Avgpool avg1 = Avgpool(c2_h, c2_w, c2_d, 13, 1);
+    Array<float> av1_out = avg1.HM_execute(conv2_out, 1, c2_d);
+    return av1_out;
 }
 
 void main() {
@@ -263,8 +302,20 @@ void main() {
     www.push_back(ww);
     www.push_back(ww);
     www.push_back(ww);
+    vector<Array<float>> bias;
 
-    
-    SqueezeNetV1_1(img, www, 3);
+    SqueezeNetV1_1(img, www, bias, 3);
+
+    //---------------------------------------------------------------------------//
+    fstream newfile;
+    newfile.open("tpoint.txt", ios::in);
+    if (newfile.is_open())
+    {
+        string tp;
+        while (getline(newfile, tp)) { 
+            cout << tp << "\n";
+        }
+        newfile.close();
+    }
 
 }

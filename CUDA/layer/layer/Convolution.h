@@ -30,7 +30,7 @@ public:
 	
 	vector<vector<float>> HM_excute(vector<vector<float>> v_input, int strid);
 	Array<float> HM_excute_Array(Array<float> v_input, int strid);
-	Array<float> HM_excute_Array_Depth(Array<float> v_input, vector<int> stride, int p_bits, bool zero, int DEPTH);
+	Array<float> HM_excute_Array_Depth(Array<float> v_input,Array<float> baias, vector<int> stride, int p_bits, bool zero, int DEPTH);
 
 	vector<vector<float>> vector_padding(vector<vector<float>> v, int p_bits, bool zero);
 	vector<float> convert_2d_2_1d(vector<vector<float>>v);

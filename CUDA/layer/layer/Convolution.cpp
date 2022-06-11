@@ -247,7 +247,7 @@ vector<float> Convolution::convert_2d_2_1d(vector<vector<float>>v)
 	return output;
 }
 
-Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, vector<int> strid, int p_bits, bool zero, int DEPTH)
+Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, Array<float> baias, vector<int> strid, int p_bits, bool zero, int DEPTH)
 {
 
 	
@@ -348,6 +348,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, vector<int>
 					v = accumulate(res.begin(), res.end(), 0.0);
 
 					//v_output[col][row] = v;
+					
 					c_output.push_back(v);
 					/*if (col == 110)
 					{
@@ -357,6 +358,15 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, vector<int>
 				}
 			}
 			//vector<float> vector2 = Convolution::Flatten(v_output);
+			for (float& x_ : c_output) // if you want to add 10 to each element
+			{
+				x_ += baias(filter_index, d);
+				if (x_ < 0)
+				{
+					x_ = 0;
+				}
+			}
+
 			if (first_time)
 			{
 				V_out = c_output;
@@ -368,6 +378,7 @@ Array<float> Convolution::HM_excute_Array_Depth(Array<float> _input, vector<int>
 			}
 			
 			c_output.clear();
+			
 		}
 
 		first_time = TRUE;
