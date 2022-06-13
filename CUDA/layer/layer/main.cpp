@@ -609,35 +609,37 @@ void main()
     wei.push_back(w);
     Array<float> biass({ 3 });
     biass.fill_data({ 1,1,1 });
+    
     Convolution conv1 = Convolution(9, 9, 3, 3, 3, 3);
+    Avgpool avg1 = Avgpool(9, 9, 3, 3, 3);
+    Maxpool max1 = Maxpool(9, 9, 3, 3, 3);
     conv1.load_parameters(wei);
-    //Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_in, biass, { 1,1 }, 0, false, 3);
-
-    /*vector<Array<float>> ww;
+    
+    vector<Array<float>> ww;
     ww.push_back(w);
     ww.push_back(w);
-    ww.push_back(w);*/
+    ww.push_back(w);
 
     vector<vector<Array<float>>> www;
-    /*www.push_back(ww);
     www.push_back(ww);
-    www.push_back(ww);*/
+    www.push_back(ww);
+    www.push_back(ww);
+    
+    //-------------------------test convolution, average, and maxpool layers----------------------- 
+    //Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_in, biass, { 1,1 }, 0, false, 3);
+    //Array<float> avg1_out = avg1.HM_execute(v_in, 3, 3);
+    //Array<float> max1_out = max1.HM_execute(v_in, 3, 3);
+    // 
+    //
+    // 
+    // 
+    //  
+    //____________________load weigts______________________
+    vector<vector<Array<float>>> Model_Weigts;
     vector<Array<float>> bias;
+    LoadWeights("F:/graduation_project/CUDA/layer/outmodel.json", Model_Weigts, bias);
 
-    LoadWeights("F:/graduation_project/CUDA/layer/outmodel.json", www, bias);
+    SqueezeNetV1_1(img, Model_Weigts, bias, 3);
 
-    SqueezeNetV1_1(img, www, bias, 3);
-
-    //---------------------------------------------------------------------------//
-    fstream newfile;
-    newfile.open("tpoint.txt", ios::in);
-    if (newfile.is_open())
-    {
-        string tp;
-        while (getline(newfile, tp)) { 
-            cout << tp << "\n";
-        }
-        newfile.close();
-    }
-
+    //------------------------------THE END------------------------------//
 }
