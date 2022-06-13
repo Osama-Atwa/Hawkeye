@@ -44,9 +44,6 @@
     <ClCompile Include="Maxpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Array.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

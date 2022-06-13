@@ -152,7 +152,6 @@
     <ClInclude Include="Maxpool.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Array.cpp" />
     <ClCompile Include="Avgpool.cpp" />
     <ClCompile Include="Convolution.cpp" />
     <ClCompile Include="layer.cpp" />

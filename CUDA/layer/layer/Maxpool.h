@@ -21,7 +21,7 @@ public:
 	vector<vector<float>> convert(vector<float> v);
 	vector<vector<float>> max_filter(vector<vector<float>> v, int s = 1);
 
-	//af::array af_max_filter(af::array v_input, int isz, int wsz, int stride, int padding);
+	af::array af_max_filter(af::array v_input, int isz, int wsz, int stride, int padding);
 	Array<float> HM_execute(Array<float> v_input, int stride, int DEPTH);
 	void load_parameters(Array<float>& V);
 	void execute(Array<float>& v_input, Array<float>& v_output);
