@@ -114,7 +114,7 @@ Array<float> SqueezeNetV1_1(Array<float> v_input,vector<vector<Array<float>>> we
 
     Maxpool maxpool1 = Maxpool(c1_h, c1_w, c1_depth, 3, 2);
     Array<float> max1_out = maxpool1.HM_execute(conv1_out, 2, c1_depth);
-    cout << endl << "Layer : maxpool1" << "(" << max1_out.get_dim()[0] << "," << max1_out.get_dim()[1] << "," << max1_out.get_dim()[2] << ")" << endl;
+    cout << endl << "Layer : max1_out" << "(" << max1_out.get_dim()[0] << "," << max1_out.get_dim()[1] << "," << max1_out.get_dim()[2] << ")" << endl;
     
     vector<vector<Array<float>>> fire1_weights;
     fire1_weights.push_back(weights[1]);
