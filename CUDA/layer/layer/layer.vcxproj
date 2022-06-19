@@ -118,13 +118,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(AF_PATH)/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(AF_PATH)/lib;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world455d.lib;afcpu.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,6 +149,7 @@
     <ClInclude Include="Array.h" />
     <ClInclude Include="Avgpool.h" />
     <ClInclude Include="Convolution.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="Maxpool.h" />
   </ItemGroup>
