@@ -456,7 +456,7 @@ bool LoadWeights(string weightfilename, vector<vector<Array<float>>>& weights, v
 
 void main()
 {
-    Mat image = imread("F:/graduation_project/CUDA/bump.jpg");
+    Mat image = imread("F:/graduation_project/CPP Model/bump.jpg");
     int down_width = 224;
     int down_height = 224;
 
@@ -626,9 +626,9 @@ void main()
     www.push_back(ww);
     
     //-------------------------test convolution, average, and maxpool layers----------------------- 
-    //Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_in, biass, { 1,1 }, 0, false, 3);
-    //Array<float> avg1_out = avg1.HM_execute(v_in, 3, 3);
-    //Array<float> max1_out = max1.HM_execute(v_in, 3, 3);
+    Array<float> conv1_out = conv1.HM_excute_Array_Depth(v_in, biass, { 1,1 }, 0, false, 3);
+    Array<float> avg1_out = avg1.HM_execute(v_in, 3, 3);
+    Array<float> max1_out = max1.HM_execute(v_in, 3, 3);
     // 
     //
     // 
@@ -637,7 +637,7 @@ void main()
     //____________________load weigts______________________
     vector<vector<Array<float>>> Model_Weigts;
     vector<Array<float>> bias;
-    LoadWeights("F:/graduation_project/CUDA/layer/outmodel.json", Model_Weigts, bias);
+    LoadWeights("F:/graduation_project/CPP Model/layer/outmodel.json", Model_Weigts, bias);
 
     SqueezeNetV1_1(img, Model_Weigts, bias, 3);
 
